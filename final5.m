@@ -55,3 +55,7 @@ biplot(pc(:,1:3), 'scores',scores(:,1:3));
 axis([-1 1.1 -0.4 1 -1 1]);
 view([30 40]);
 
+
+[Loadings,specificVar,T,stats] = factoran(pollution_data,2,'rotate','none');
+
+%Ref: http://www.mathworks.com/help/toolbox/stats/brkgqnt.html
