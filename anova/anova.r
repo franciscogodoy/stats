@@ -32,6 +32,10 @@ install.packages("ISwR");
 #Compare the individual groups.
 	summary(lm(folate~ventilation));
 
+# pairwise.t.test computes all possible two-group comparisons
+# capable of making adjustments for multiple comparisons
+	pairwise.t.test(folate, ventilation, p.adj="bonferroni");
+
 
 
 
