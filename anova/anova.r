@@ -1,5 +1,4 @@
-# notation using pp.300, johnson mva book 
-install.packages("ISwR");
+	install.packages("ISwR");
 	attach(red.cell.folate);
 	summary(red.cell.folate);
 	by(folate, ventilation, summary);
