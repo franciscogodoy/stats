@@ -71,15 +71,13 @@
 		}
   
 	# use mle.estimate() function to obtain the MLE solution to a factor model 
-		mle.estimate(data5, 7, 2); # 2 factor solution;
+		mle.estimate(data, 5, 2); # 2 factor solution;
 
 		# use standard R output which gives more information.
-		print(factanal(data5, factors = 2, rotation = "none"));
-
-		mle.estimate(data5, 7, 3); # 3 factor solution;
+		print(factanal(data, factors = 2, rotation = "none"));
 
 		# use standard R output which gives more information.
-		print(factanal(data5, factors = 3, rotation = "none"));
+		print(factanal(data, factors = 2, rotation = "none"));
 
 
 
