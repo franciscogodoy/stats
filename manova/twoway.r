@@ -17,14 +17,18 @@
 		2.8, 4.1, 3.8, 1.6, 3.4, 8.4, 5.2, 6.9, 2.7, 1.9);
 
 	Y <- cbind(tear, gloss, opacity);
-
-	fit <- manova(Y ~ rate * additive);
 	rate <- factor(gl(2,10), labels=c("Low", "High"));
 	additive <- factor(gl(2, 5, len=20), labels=c("Low", "High"));
 
-	summary(fit, test = c("Wilks"));
-	summary.aov(fit);
 
+	fit <- manova(Y ~ rate * additive);
+	#interation not significant
+	summary(fit, test = c("Wilks")); 
+
+	#
+	fit2 <- manova(Y ~ rate + additive);
+	summary(fit2, test = c("Wilks")); 
+	summary.aov(fit2);
 
 #	using by() to examine various group means
 	by(Y, rate, mean);
