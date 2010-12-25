@@ -67,5 +67,15 @@ clustTreeSng = linkage(eucD,'single');
 [h,nodes] = dendrogram(clustTreeSng,0);
 set(gca,'TickDir','out','TickLength',[.002 0],'XTickLabel',[]);
 
+% Compute 3 clusters of the Fisher iris data using Ward linkage and ignoring species information, 
+% see how the cluster assignments correspond to the three species.
+
+%Z = linkage(meas,'ward','euclidean');
+Z = linkage(meas,'ward','cosine');
+c = cluster(Z,'maxclust',3);
+crosstab(c,species);
+firstfive = Z(1:5,:) % first 5 rows of Z
+dendrogram(Z)
+
 % ref: 
 % http://www.mathworks.com/products/statistics/demos.html?file=/products/demos/shipping/stats/clusterdemo.html

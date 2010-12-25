@@ -53,3 +53,29 @@ hold off
 xlabel('Sepal Length'); ylabel('Sepal Width'); zlabel('Petal Length');
 view(-137,10);
 grid on
+
+% The above plot shows that the results from hierarchical clustering with cosine distance 
+% are qualitatively similar to results from K-Means, using three clusters. 
+% However, creating a hierarchical cluster tree allows us to visualize, all at once, 
+% what would require considerable experimentation with different values for K in K-Means clustering.
+
+% experiment with different linkages. 
+% clustering the iris data with single linkage tends to link together objects 
+% over larger distances than average distance does, 
+% gives a very different interpretation of the structure in the data.
+clustTreeSng = linkage(eucD,'single');
+[h,nodes] = dendrogram(clustTreeSng,0);
+set(gca,'TickDir','out','TickLength',[.002 0],'XTickLabel',[]);
+
+% Compute 3 clusters of the Fisher iris data using Ward linkage and ignoring species information, 
+% see how the cluster assignments correspond to the three species.
+
+Z = linkage(meas,'ward','euclidean');
+c = cluster(Z,'maxclust',3);
+crosstab(c,species)
+firstfive = Z(1:5,:) % first 5 rows of Z
+dendrogram(Z)
+
+
+% ref: 
+% http://www.mathworks.com/products/statistics/demos.html?file=/products/demos/shipping/stats/clusterdemo.html
