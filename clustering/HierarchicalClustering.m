@@ -1,0 +1,71 @@
+load fisheriris
+
+% create a cluster tree using distances between observations in the iris data. 
+% by using Euclidean distance.
+eucD = pdist(meas,'euclidean');
+clustTreeEuc = linkage(eucD,'average');
+
+% cophenetic correlation is to verify that the cluster tree is consistent with the original distances. 
+% Large values indicate that the tree fits the distances well, 
+% in the sense that pairwise linkages between observations correlate with their actual pairwise distances. 
+cophenet(clustTreeEuc,eucD)
+
+
+% plot a dendrogram to visualize the hierarchy of clusters
+% The root node in this tree is much higher than the remaining nodes, confirming 
+% there are two large, distinct groups of observations
+
+[h,nodes] = dendrogram(clustTreeEuc,0);
+set(gca,'TickDir','out','TickLength',[.002 0],'XTickLabel',[]);
+
+% cosine might also be a good choice of distance measure
+cosD = pdist(meas,'cosine');
+clustTreeCos = linkage(cosD,'average');
+cophenet(clustTreeCos,cosD)
+
+[h,nodes] = dendrogram(clustTreeCos,0);
+set(gca,'TickDir','out','TickLength',[.002 0],'XTickLabel',[]);
+
+% With 150 observations, the plot is cluttered, 
+% can make a simplified dendrogram that does not display the very lowest levels of the tree.
+[h,nodes] = dendrogram(clustTreeCos,12);
+set(gca,'TickDir','out','TickLength',[.002 0],'XTickLabel',[]);
+
+
+% The three highest nodes in this tree separate out three equally-sized groups, 
+% plus a single specimen (labeled as leaf node 5) that is not near any others.
+
+[sum(ismember(nodes,[11 12 9 10])) sum(ismember(nodes,[6 7 8])) ...
+                  sum(ismember(nodes,[1 2 4 3])) sum(nodes==5)]
+              
+ % use the cluster function to cut the tree and explicitly partition observations into specific clusters
+ % Using the hierarchy from the cosine distance to create clusters, 
+ % specify a linkage height that will cut the tree below the three highest nodes, 
+ % and create four clusters, then plot the clustered raw data.
+ptsymb = {'bs','r^','md','go','c+'};
+hidx = cluster(clustTreeCos,'criterion','distance','cutoff',.006);
+for i = 1:5
+    clust = find(hidx==i);
+    plot3(meas(clust,1),meas(clust,2),meas(clust,3),ptsymb{i});
+    hold on
+end
+hold off
+xlabel('Sepal Length'); ylabel('Sepal Width'); zlabel('Petal Length');
+view(-137,10);
+grid on
+
+% The above plot shows that the results from hierarchical clustering with cosine distance 
+% are qualitatively similar to results from K-Means, using three clusters. 
+% However, creating a hierarchical cluster tree allows us to visualize, all at once, 
+% what would require considerable experimentation with different values for K in K-Means clustering.
+
+% experiment with different linkages. 
+% clustering the iris data with single linkage tends to link together objects 
+% over larger distances than average distance does, 
+% gives a very different interpretation of the structure in the data.
+clustTreeSng = linkage(eucD,'single');
+[h,nodes] = dendrogram(clustTreeSng,0);
+set(gca,'TickDir','out','TickLength',[.002 0],'XTickLabel',[]);
+
+% ref: 
+% http://www.mathworks.com/products/statistics/demos.html?file=/products/demos/shipping/stats/clusterdemo.html
