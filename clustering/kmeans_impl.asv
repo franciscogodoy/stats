@@ -1,0 +1,33 @@
+% Original Andrew Ng - Stanford.edu
+%
+% INPUT:   
+%   - As input, this function takes the m x n data matrix X 
+%   - and the number of clusters k.
+%
+% PERFORM: 
+%   - The function initialize k centroids randomly 
+%   - Then repeatedly perform the following steps 
+%      - (1) Assignming each training example x(i) to the closest cluster
+%      - (2) Moving each cluster centroid to the mean of the points assigned to it 
+% 
+% OUTPUT: 
+%   - an m-element vector, clusters, indicating which cluster each 
+%        data point belongs to, 
+%   - and a k*n matrix, centers, which contain the centroids of each cluster
+
+
+function [clusters, centroids] = kmeans(X, k)
+    [n,p] = size(X);
+    oldcentroids  = zeros(k,p);
+    centroids = X(ceil(rand(k,1)*n),:);
+    while (norm(oldcentroids - centroids) > 1e-15) 
+        oldcentroids = centroids;
+        %compute clustering assignments
+        for i=1:n
+            dist_to_k_means = sum((repmat(X(i,:), k,1) - centroids).^2, 2);
+            
+        end
+               
+    end
+
+end
