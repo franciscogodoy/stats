@@ -1,7 +1,10 @@
+% from
+% http://www.mathworks.com/products/statistics/demos.html?file=/products/de
+% mos/shipping/stats/clusterdemo.html
 % make sure to replicate the result;
-seed = 931316785; rand('seed',seed); randn('seed',seed);
 
 % load iris dataset 
+seed = 931316785; rand('seed',seed); randn('seed',seed);
 load fisheriris;
 
 % K-Means is an iterative algorithm that assigns objects to clusters 

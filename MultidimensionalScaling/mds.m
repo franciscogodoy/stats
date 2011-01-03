@@ -1,3 +1,4 @@
+% From http://www.mathworks.com/help/toolbox/stats/braa2bv-1.html
 % MDS produce a representation of data in a small number of dimensions. 
 % MDS visualize how near points are to each other for many kinds of distance 
 % or dissimilarity metrics 

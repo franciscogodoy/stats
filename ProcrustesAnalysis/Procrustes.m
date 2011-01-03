@@ -1,3 +1,4 @@
+% From http://www.mathworks.com/help/toolbox/stats/procrustes.html
 % Procrustes analysis
     d = procrustes(X,Y);    
     [d,Z] = procrustes(X,Y);

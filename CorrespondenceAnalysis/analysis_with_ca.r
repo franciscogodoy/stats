@@ -1,3 +1,5 @@
+# from http://www.statmethods.net/advstats/ca.html
+
 install.packages('ca');
 library(ca)
 
@@ -10,7 +12,7 @@ library(ca)
 	fit <- ca(mytable);
 
 	# basic results 
-	print(fit) 
+	print(fit);
 
 	# extended results 
 	summary(fit);
