@@ -1,0 +1,29 @@
+% Using Newton method to fitt locally-weighted logistic regression
+% parameters. 
+% 
+% Weighting training examples based on the query observation 
+% See http://
+
+function y_hat = weighted_logit(trains, targets, x, tau) 
+    lambda = 1e-4;
+    n = size(trains,1);
+    p = size(trains,2);  
+    theta = zeros(p,1);    
+    
+    % compute weights of each training point for the query point
+    w = exp(-sum().^2);
+    
+    
+    grad = ones(p,1);
+
+    while (norm(grad) > 1e-4)   
+        y_hat = logistic(trains * theta);
+        grad = trains' * (targets - y_hat) - lambda*theta;
+        H = -trains' * diag(y_hat.*(1 - y_hat)) * trains - lambda*eye(p);
+        theta = theta - H \ grad;
+    end
+end
+
+function y = logistic(x) 
+ y = 1./(1+exp(-x));
+end

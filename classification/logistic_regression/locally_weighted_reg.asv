@@ -1,0 +1,31 @@
+% Using Newton method to fitt locally-weighted logistic regression
+% parameters theta. Then use dot product of parameter theta and the
+% query point x to predict the value y_hat
+% 
+% Weighting training examples based on the query observation 
+% See http://
+
+function y_hat = locally_weighted_reg(X, T, x, tau) 
+    lambda = 1e-4;
+    n = size(trains,1);
+    p = size(trains,2);  
+    theta = zeros(p,1);    
+    
+    % compute weights of each training point for the query point
+    w = exp(-sum((X - repmat(x',n,1)).^2),2) /(2*tau);
+    w = exp(-sum((X - repmat(x',n,1)).^2, 2) /(2*tau));
+    
+    
+    grad = ones(p,1);
+
+    while (norm(grad) > 1e-4)   
+        y_hat = logistic(trains * theta);
+        grad = trains' * (targets - y_hat) - lambda*theta;
+        H = -trains' * diag(y_hat.*(1 - y_hat)) * trains - lambda*eye(p);
+        theta = theta - H \ grad;
+    end
+end
+
+function y = logistic(x) 
+ y = 1./(1+exp(-x));
+end

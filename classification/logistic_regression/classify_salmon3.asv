@@ -1,0 +1,23 @@
+% classify salmon fish using logistics regression 
+% use newton method with regularization 
+
+function confmat = classify_salmon3()
+
+
+    mydata = load('salmon.data');
+    targets = mydata(:,1) -1;
+    trains = mydata(:,2:4);
+    
+    % Fitting parameters using newton algorithm
+    theta = newton_fit(trains, targets);
+    disp(theta);
+    y_hat = [];
+    for i = 1:size(targets,1)
+        x = trains(i,:);
+        y_hat(i) = double(x*theta > 0);
+    end
+    
+    confmat = crosstab(targets, y_hat);
+    fprintf('confusion matrix \n');
+    disp(confmat);
+end

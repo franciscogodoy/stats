@@ -1,0 +1,59 @@
+% Fit a logistic model 
+% Logistic model predicts output y from input vector x using this rule: 
+%       p(y) = g(theta'*x) 
+%            = g(w'*x)
+%            = g(w0 + w1*x1 + w2*x2 * ... + wp*xp)
+%       where g(.) is the sigmoid function. g(z) = 1/(1+exp(-z))
+% 
+% The probability that output y=1 is computed first from a linear function of x, 
+%   followed by a monotone nonlinear (logistic) function (aka link function) 
+%   which makes the output be bounded between 0 and 1.  
+%
+%   The derivative g'(z) = g(z)(1-g(z))
+% 
+% fitting using gradient ascent, 
+% see pp. 16-19, Andrew Ng. derivation at 
+% http://
+function w = logistic_fitting(maxiter, trains, targets) 
+    trains = [ones(size(trains,1),1) trains];
+    p = size(trains,2);     % p number of predictor variables         
+    n = size(targets,1);    % n number of training records       
+    alpha = 0.01;           % learning rate = 0.1
+    
+    % initial weights
+    thetas = (rand(p,1) - 0.5)*2*0.1; 
+    error  =  exp(20);
+    old_err1 = error + 1;
+    old_err2 = error + 2;            
+   
+    for iter = 1:maxiter                 
+        %if train_type == obj.STOCHASTIC;                        
+        % random.shuffle(ordering)
+        for j = 1:p                   
+           delta(j) = 0;
+           for i = 1:n
+                x = trains(i,:)';
+                y = targets(i,:);     
+                h = logistic(thetas' * x);
+                delta(j) = delta(j) + (y - h) * x(j);
+           end
+           thetas(j) = thetas(j) + alpha * delta(j);                                  
+        end        
+         
+         %compute the error 
+         y_hat = logistic(trains * w);
+         old_err2 = old_err1;
+         old_err1 = error;                
+         error = norm(targets-y_hat);  
+         fprintf('%d: %8.2f \n', iter, error);         
+         if  (error > old_err1 - 1e-6) && (old_err1 > old_err2 - 1e-6)
+            % converged. the RMS error start encreasing again 
+            break;
+         end                                          
+    end  
+end
+
+function y = logistic(x) 
+ y = 1./(1+exp(-x));
+end
+

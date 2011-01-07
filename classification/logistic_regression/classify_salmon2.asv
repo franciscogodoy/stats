@@ -1,0 +1,25 @@
+% classify salmon fish using 
+function confmat = classify_salmon2()
+    mydata = load('salmon.data');
+    Y = mydata(:,1) -1;
+    X = mydata(:,2:4);
+    B = glmfit(X, [Y ones(100,1)], 'binomial', 'link', 'logit');
+    disp(B);
+    
+    X2 = [ones(size(X,1),1) X];
+    h = logistic(X2 * B);
+    y_hat = [];
+    for i = 1:size(Y,1)
+        if h(i) > 0.5
+            y_hat(i) = 1; 
+        else
+            y_hat(i) = 0;
+        end
+    end
+    confmat = crosstab(Y, y_hat);
+    disp(confmat);
+end
+
+function y = logistic(x) 
+ y = 1./(1+exp(-x));
+end

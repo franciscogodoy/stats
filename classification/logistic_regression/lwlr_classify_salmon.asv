@@ -1,0 +1,20 @@
+% classify salmon fish using locally-weighted version 
+% of logistic regression
+% using holdout prececure to estimate the error rate
+
+function confmat = lwlr_classify_salmon()
+    mydata = load('salmon.data');
+    targets = mydata(:,1) -1;
+    trains = mydata(:,2:4);
+    n = size(targets,1);
+    y = zeros(n,1);
+    for i = 1:n
+        x = trains(i,:)';  
+        X 
+        y(i) = locally_weighted_reg(trains,targets, x, 0.01);
+    end
+    
+    confmat = crosstab(targets, y);
+    fprintf('confusion matrix \n');
+    disp(confmat);
+end

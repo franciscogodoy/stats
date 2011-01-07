@@ -1,0 +1,29 @@
+% Fit a logistic model 
+% Logistic model predicts output y from input vector x using this rule: 
+%       p(y) = g(theta'*x) 
+%       where g(.) is the sigmoid function. g(z) = 1/(1+exp(-z))
+% 
+% The probability that output y=1 is computed first from a linear function of x, 
+%
+% fitting using Newton algorithm
+% see pp. 20-21, Andrew Ng. derivation at 
+% http://
+function theta = newton_fit(trains, targets) 
+    lambda = 1e-4;
+    n = size(targets,1);    % n number of training records       
+    p = size(trains,2);     % p number of predictor variables         
+    
+    % initial weights
+    theta = zeros(p,1);    
+    g = ones(p,1);
+    
+    for (norm(g) > 1e-6)
+        y_hat = logistic(trains * theta);
+        g = trains' * (targets - y_hat) - lambda*theta;
+        H = -trains' * diag(y_hat*(targets - y_hat)) - lambda*theta;
+    end  
+end
+
+function y = logistic(x) 
+ y = 1./(1+exp(-x));
+end
