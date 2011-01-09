@@ -1,0 +1,130 @@
+% Softmax regression is Multinomial version of logistic regression. 
+% Function form: 
+%   theta = mnrfit(X,Y)
+%   theta = mnrfit(X,Y,param1,val1,param2,val2,...)
+%   [theta,dev] = mnrfit(...)
+%   [theta,dev,stats] = mnrfit(...)
+
+% (1) theta = mnrfit(X,Y) returns the matrix theta of coefficient estimates 
+%     for a softmax regression of the responses Y on the predictive variables X. 
+%     Here, X is an n-by-p matrix of p predictors at each of n observations. 
+%           Y is an n-by-k matrix, where Y(i,j) is the number of outcomes
+%           of the multinomial category j for the predictor combinations
+%           given by X(i,:)
+%
+%           Y can also be an n-by-1 column vector of scalar integers from 1
+%           to k indicating the value of the response for each observation, and
+%           all sample sizes are taken to be 1
+%           The discovered theta is a (p+1)-by-(k–1) matrix of estimates, where
+%           each column corresponds to the estimated intercept term and
+%           predictor coefficients, one for each of the first k–1
+%           multinomial categories. The estimates for the kth category are
+%           taken to be zero.
+
+
+% (2) theta = mnrfit(X,Y,param1,val1,param2,val2,...) specify optional
+%             parameter pairs to control the model fit.
+%      Parameters are:
+%           'model' — The type of model to fit;  'nominal' (the default),
+%                  'ordinal', or 'hierarchical'
+%           'interactions' — Determines whether the model includes an
+%                  interaction between the multinomial categories and the
+%                  coefficients
+%                 Specify as 'off' to fit a model with a common set of
+%                 coefficients for the predictor variables across all
+%                 multinomial categories. This is often described as parallel
+%                 regression.  Specify as 'on' to fit a model with different
+%                 coefficients across categories.
+%
+%                 In all cases, the model has different intercepts across
+%                 categories. Thus, theta is a vector containing k–1+p
+%                 coefficient estimates when 'interaction' is 'off', and a
+%                 (p+1)-by-(k–1) matrix when it is 'on'. The default is 'off'
+%                 for ordinal models, and 'on' for nominal and hierarchical
+%                 model
+%           'link' — The link function to use for ordinal and hierarchical
+%               models. The link function defines the relationship g(?ij) =
+%               xibj between the mean response for the ith observation in the
+%               jth category, ?ij , and the linear combination of predictors
+%               xibj. Link parameter value are 'logit', 'probit',
+%               'comploglog', or 'loglog'.
+%           'estdisp' = 'on' to estimate a dispersion parameter for the
+%               multinomial distribution in computing standard errors, or 'off'
+%              (default) to use the theoretical dispersion value of of 1.
+%
+% (3) [theta,dev] = mnrfit(...) returns the deviance of the fit dev.
+%
+% (4) [theta,dev,stats] = mnrfit(...) returns a structure stats that
+%       contains the following fields:
+%             dfe — Degrees of freedom for error
+%             s — Theoretical or estimated dispersion parameter
+%             sfit — Estimated dispersion parameter
+%             se — Standard errors of coefficient estimates theta
+%             coeffcorr — Estimated correlation matrix for theta
+%             covb — Estimated covariance matrix for theta
+%             t — t statistics for theta
+%             p — p-values for theta
+%             resid — Residuals
+%             residp — Pearson residuals
+%             residd — Deviance residuals
+
+
+    x = [-3 -2 -1 0 1 2 3]';
+    Y = [1 11 13; 2 9 14; 6 14 5; 5 10 10; 5 14 6; 7 13 5; 8 11 6];
+    bar(x,Y,'stacked'); ylim([0 25]);
+
+% Now fit a nominal model for the individual response 
+% category probabilities, with separate slopes on the
+% single predictor variable, x, for each
+% category:
+
+% The first row of theta contains the intercept terms 
+% for the first two response categories.  The second row 
+% contains the slopes.
+    theta = mnrfit(x,Y,'model','nominal', 'interactions','on');
+
+% Compute the predicted probabilities for the three 
+% response categories:
+    xx = linspace(-4,4)';
+    pHatNom = mnrval(theta,xx,'model','nominal', 'interactions','on');
+    line(xx,cumsum(25*pHatNom,2),'LineWidth',2);
+
+% Fit a "parallel" ordinal model for the cumulative response category
+% probabilities, with a common slope on the single predictor variable, x,
+% across all categories
+
+% The first two elements of thetaOrd are the
+% intercept terms for the first two response categories.
+% The last element of betaHatOrd is the common slope.
+
+    thetaOrd = mnrfit(x,Y,'model','ordinal', 'interactions','off');
+
+
+% Compute the predicted cumulative probabilities for the
+% first two response categories.  The cumulative
+% probability for the third category is always 1.
+
+    pHatOrd = mnrval(thetaOrd,xx,'type','cumulative', 'model','ordinal','interactions','off');
+    bar(x,cumsum(Y,2),'grouped'); ylim([0 25]);
+    line(xx,25*pHatOrd,'LineWidth',2);
+
+% Multinomial logistic regression analysis on iris dataset
+
+    mydata = load('iris.data');
+    X = mydata(:,1:4);
+    Y =  mydata(:,5)+1;
+    theta = mnrfit(X,Y,'model','nominal', 'interactions','on');
+    
+    % Compute the predicted probabilities for the three 
+    % response categories:
+    y_hat = mnrval(theta,X,'model','nominal', 'interactions','on');
+    y_hat = double(y_hat > 0.5);
+    
+    target = zeros(50,3);
+    class1_idx = (Y==1);
+    target(class1_idx,1) = 1;
+    class2_idx = data(:,5)==1;
+    target(class1_idx,2) = 1;
+    class2_idx = data(:,5)==2;
+    target(class2_idx,3) = 1;
+    
