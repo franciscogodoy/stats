@@ -1,0 +1,78 @@
+% Note from
+% http://www.mathworks.com/help/toolbox/stats/naivebayesclass.html
+
+% Naive Bayes is a generative classifier. In training perios NB estimates 
+% the probability density of features X given class Y P(X|Y). 
+% NaiveBayes provides support for Gaussian, kernel, multinomial, and
+% multivariate multinomial distribution
+
+% There are two steps to use Naive Bayes:
+
+% (1) Training: 
+%   Using the training samples, NB estimate the parameters of feature
+%   probability distributions, assuming features are conditionally
+%   independent given the class y = k
+
+% (2) Prediction step: 
+%   For a new data point, a trained NB compute the posterior
+%   probability of that point belonging to each class. NB then
+%   classifies that point according the largest posterior probability.
+
+%  NB supports different distributions for different features.
+
+% (a) When to use gaussian distribution with NB
+
+%    suitable if a feature follow Gaussian in each class. NB classifier
+%    estimates a separate Gaussian distribution for each class by computing
+%    the sample mean and variance of the training data in that class.
+
+% (b) When to use kernel distribution with NB
+
+%    suitable if a continuous feature does not follow Gaussian
+%    (i.e. distribution of a feature may be skewed or have multiple peaks or modes.
+%    For each feature specified as a kernel distribution, the Naive Bayes
+%    classifier computes a separate kernel density estimate for each class
+%    based on the training data for that class. By default, the kernel is
+%    the Gaussian kernel, and the classifier selects a width automatically
+%    for each class and feature. Specifying different kernels or different
+%    widths for each feature is possible. 
+
+% (c) When to use multinomial distribution with NB
+
+%    suitable when all features represent counts of a set of words. 
+%    Aka "bag of words" model. 
+%
+%    Example: Spam classifier.  Each feature contains number of occurrences
+%    of various words in an e-mail. One feature might count the number
+%    times the word "buy" appears, another feature might count the number
+%    of times the word "cheap" appears, etc. This model also assump 
+%    the total number of tokens (or total document length) is independent
+%    of response class.
+
+% (c) When to use multivariate multinomial distribution with NB
+
+%   suitable for categorical features. i.e. a feature describing person
+%   in political categories democrat/republican/independent using the
+%   multivariate multinomial model. The feature categories are sometimes
+%   called the feature levels.
+
+%   For each feature with a multivariate multinomial distribution, NB
+%   computes a separate set of probabilities for the set of feature levels
+%   for each class.
+
+% Example of predicting the class of iris flowers using NB classifier
+load fisheriris
+
+% Use default Gaussian distribution:
+C1 = NaiveBayes.fit(meas,species);
+Y_hat = C1.predict(meas);
+disp(confusionmat(species,Y_hat));
+
+% Use Gaussian distribution for features 1 and 3 and kernel density
+% estimation for features 2 and 4:
+C2 = NaiveBayes.fit(meas,species,'dist', {'normal','kernel','normal','kernel'});
+Y_hat = C2.predict(meas);
+disp(confusionmat(species,Y_hat));
+
+
+

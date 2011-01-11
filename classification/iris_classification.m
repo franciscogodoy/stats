@@ -23,6 +23,7 @@ for i= 1:size(x1,1)
     % x is a cell array 
     x = {x1h x2 x3};
     y_hat(i) = discriminate(x0, x,y);    
+    
 end
 
 for j= 1:size(x2,1) 
