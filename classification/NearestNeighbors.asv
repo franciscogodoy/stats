@@ -83,7 +83,7 @@ line(p(1),p(2),'marker','x','color','k', 'markersize',10,'linewidth',2);
 
 % find 10 points closest to p:
 [n,d] = knnsearch(X,p,'k',10);
-line(x(n,1),x(n,2),'color',[.5 .5 .5],'marker','o', 'linestyle','none','markersize',10);
+line(X(n,1),X(n,2),'color',[.5 .5 .5],'marker','o', 'linestyle','none','markersize',10);
 
 % display 10 closest points
 disp(X(n,:));
@@ -126,14 +126,16 @@ set(h,'linestyle',':')
 Using the same dataset, find the 10 nearest neighbors to three new points:
 
 newpoint2 = [5 1.45;6 2;2.75 .75];
-gscatter(x(:,1),x(:,2),species)
-legend('location','best')
-[n2,d2] = knnsearch(x,newpoint2,'k',10);
-line(x(n2,1),x(n2,2),'color',[.5 .5 .5],'marker','o', 'linestyle','none','markersize',10)
-line(newpoint2(:,1),newpoint2(:,2),'marker','x','color','k',...
-   'markersize',10,'linewidth',2,'linestyle','none')
+gscatter(x(:,1),x(:,2),species);
+legend('location','best');
+[n,dd] = knnsearch(x,newpoint2,'k',10);
+line(x(n,1),x(n,2),'color',[.5 .5 .5],'marker','o', 'linestyle','none','markersize',10);
+line(newpoint2(:,1),newpoint2(:,2),'marker','x','color','k', 'markersize',10,'linewidth',2,'linestyle','none');
 
-
+% Find the species of the 10 nearest neighbors for each new point:
+tabulate(species(n(1,:)));
+tabulate(species(n(2,:)));
+tabulate(species(n(3,:)));
 
 
 

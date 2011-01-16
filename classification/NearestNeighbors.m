@@ -83,7 +83,7 @@ line(p(1),p(2),'marker','x','color','k', 'markersize',10,'linewidth',2);
 
 % find 10 points closest to p:
 [n,d] = knnsearch(X,p,'k',10);
-line(x(n,1),x(n,2),'color',[.5 .5 .5],'marker','o', 'linestyle','none','markersize',10);
+line(X(n,1),X(n,2),'color',[.5 .5 .5],'marker','o', 'linestyle','none','markersize',10);
 
 % display 10 closest points
 disp(X(n,:));
