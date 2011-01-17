@@ -1,0 +1,63 @@
+% data from example 5.5, pp. 264, tan, stainbach, kumar book
+% classify salmon fish using logistics regression 
+% use glmfit function in statistics toolbox to fit 
+% the logistic model. 
+% use holdout procedure to estimate the error rate
+
+function confmat = classify_salmon()
+    mydata = load('salmon.data');
+    targets = mydata(:,1) -1;
+    trains = mydata(:,2:4);
+    n = size(trains,1);        
+    y = zeros(n,1);    
+    for i = 1:n
+            X = trains;
+            x = [1, X(i,:)];
+            
+            Y = targets;
+            
+            X(i,:) = [];
+            Y(i,:) = [];            
+            
+            theta = glmfit(X, [Y ones(99,1)], 'binomial', 'link', 'logit');            
+            y(i) = double(x*theta > 0);
+    end
+    confmat = crosstab(targets, y);
+    fprintf('confusion matrix \n');    
+    disp(confmat);
+    holdout_error =  1 - trace(confmat)/sum(sum(confmat));   
+    fprintf('The classification error is %5.2f pecent\n', holdout_error*100);    
+end
+
+load linsep.mat;
+n = size(x,1);
+p = size(x,2);
+
+cvx_begin
+    variables w(p) b 
+    minimize 1/2*sum(w.*w)
+    y.*(x*w + b) >= 1;
+cvx_end
+
+min_x1 = min(x(:,1));
+max_x1 = max(x(:,1));
+
+% coordinate points (x1,x2) of the boundary hyper plane (line)
+b_x1 = linspace(min_x1, max_x1, 200);
+b_x2 = (-b - w(1)*b_x1)/w(2);
+
+% hyperplane for y=1 support vectors
+margin1_x2 = (-b - w(1)*b_x1 +1)/w(2);
+
+% margin for y=-1 support vectors
+margin2_x2 = (-b - w(1)*b_x1 -1)/w(2);
+
+idx1 = find(y==1);
+idx2 = find(y==-1);
+
+% gscatter(x(:,1),x(:,2),y);
+plot(x(idx1,1), x(idx1,2), 'g+'); 
+hold on
+plot(x(idx2,1), x(idx2,2), 'r*'); 
+plot(b_x1, b_x2, '-b', b_x1, margin1_x2, '--g',  b_x1, margin2_x2, '--r');
+hold off;
