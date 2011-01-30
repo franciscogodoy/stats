@@ -25,4 +25,6 @@ sigma.hat.square = SSE/(n-2);
 % Use matlab stat toolbox
 X = [ones(n,1), x];
 [b,bint,r,rint,stats] = regress(y,X);
+%regstats(y,x)
+
 

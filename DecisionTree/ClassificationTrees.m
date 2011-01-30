@@ -33,7 +33,7 @@ disp(cuttype(tree,6));
 % job classifying new values. Lower branches, especially, may be strongly
 % affected by outliers. 
 
-% To simplify tree may help avoid overfitting. 
+% To avoid overfitting...
 % Use the prune method of the classregtree class to find the next largest
 % tree from an optimal pruning sequence
 pruned = prune(tree,'level',1);
