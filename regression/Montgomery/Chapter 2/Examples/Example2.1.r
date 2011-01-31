@@ -21,18 +21,28 @@
 
 # Estimate sigma squared 
 	Sxx = sum((x - mean(x))^2);
-	MSE <- sum(resid(model1)^2) / model1$df.resid;
+	SSE = sum(resid(model1)^2) ;
+	MSE = SSE / model1$df.resid;
 	print(MSE);
 
 # print all info at once 
 	summary(model1);
 
-#confidence intervals for the coefficients in the regression model
+# confidence intervals for the coefficients in the regression model
 	confint(model1, level=0.95);
+# Compute F test manually to test if beta.1 is zero
+	SSR = sum((y - mean(y))^2) ;
+	MSR = SSR / 1 ;
+	F = MSR/MSE;	
 
-plot the density of chisquare with 18 df. 
-	xseq = seq(0,30,0.01);
-	plot(xseq, dchisq(xseq, 18), xlab='s', ylab='Density -- f(s)', type='l', lwd=3, col='red');
+	# compare F with with f.quant 
+	f.quant = qf(0.975, 1, 18, lower.tail = TRUE);
+
+# Plot f density 
+	xseq = seq(0,10,0.5);
+	plot(xseq, df(xseq, 1,18), xlab='s', ylab='Density -- f(s)', type='l', lwd=3, col='red');
+	abline(v=qf(0.975,1,18), lty=1, col='red');
+	abline(v=qf(0.025,1,18), lty=1, col='red');
 
 #confidence intervals for the sigma square
 	upr = (model1$df.resid * MSE)/ qchisq(0.025, model1$df.resid);
@@ -41,7 +51,7 @@ plot the density of chisquare with 18 df.
 	print(sigma.square.CI);
 
 # Plot the density of T distribution 
-	xseq <- seq(-3,3,0.01);
+	xseq = seq(-5,5,0.01);
 	plot(xseq, dt(xseq, 18), xlab='s', ylab='Density -- f(s)', type='l', lwd=3, col='red');	
 	lines(xseq, dnorm(xseq), lty=2, lwd=3, col='blue');
 	abline(v=qt(0.975,18), lty=1, col='red');
@@ -72,13 +82,16 @@ plot the density of chisquare with 18 df.
 # Use predict function
 	predict(model1, list(x=10), interval='prediction', level=0.95);
 
+
 # Plot the confidence and prediction bands 
-	new <- data.frame(x = seq(-, 28, 0.5))
-	#new <- data.frame(x = x)
-	predict(model1, new, se.fit = TRUE)
-	pred.w.plim <- predict(model1, new, interval="prediction")
-	pred.w.clim <- predict(model1, new, interval="confidence")
-	matplot(new$x,cbind(pred.w.clim, pred.w.plim[,-1]), lty=c(1,2,2,3,3), lwd=2, type="l", ylab="predicted y")     
+	new = data.frame(x = seq(-, 28, 0.5));
+	#new = data.frame(x = x);
+	predict(model1, new, se.fit = TRUE);
+	pred.w.plim = predict(model1, new, interval="prediction");
+	pred.w.clim = predict(model1, new, interval="confidence");
+	matplot(new$x,cbind(pred.w.clim, pred.w.plim[,-1]), lty=c(1,2,2,3,3), lwd=2, type="l", ylab="predicted y"); 
 	points(x, y, pch=23, bg='red', cex=1);
 
-
+# Compute coefficient of determination 
+	SST = SSR + SSE;
+	R.square = SSR / SST; 
