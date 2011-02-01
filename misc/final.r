@@ -344,7 +344,7 @@
 
 
 	# EXTRA-WORK: DETERMINING THE NUMBER OF FACTORS TO EXTRACT
-	# A crucial decision in factor analysis is how many factors to extract. 
+	# A decision in factor analysis is how many factors to extract. 
 	# The nFactors package offer a suite of functions to aid in this decision.
 		install.packages('nFactors');
 		library(nFactors);
