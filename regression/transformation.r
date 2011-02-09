@@ -4,8 +4,6 @@ library(car);
 ############### Transform to stablize variance ##########################
 # load in the data
 	data51 = read.table('electric_utility.csv', sep=',', header=F);
-
-# Put x and y in R's toplevel namespace
 	names(data51) = c('x','y');
 	attach(data51);
 	pairs(data51, pch=23, bg='orange', cex.labels=4, cex=2);
@@ -14,7 +12,6 @@ library(car);
 	X = cbind(1,x);
 	n = length(y);
 
-% use lm function to compute regression coefficients
 	model51= lm(y ~ x);
 	summary(model51);
 
@@ -128,4 +125,49 @@ library(car);
 	summary(e52.lm2);
 	
 	detach(e52.data);
+
+
+###################################
+# Investigate the per capita education expenditure by state. 
+# states are broken into 4 regions
+# it seems the variance of the expenditure varies greatly by region. 
+# use weighted least squares and a two-stage procedure to try to address this.
+###################################
+
+	url = 'http://stats191.stanford.edu/data/education1975.table';
+	education.table <- read.table(url, header=T);
+	education.table$Region <- factor(education.table$Region);
+	attach(education.table);
+	education.lm <- lm(Y ~ X1 + X2 + X3, data=education.table);
+	summary(education.lm);
+
+	plot(education.lm);
+
+	# There is a strong outlier: Alaska. 
+	# See some variability between the variance across regions.
+	boxplot(rstandard(education.lm) ~ Region, col=c('red', 'green', 'blue', 'yellow'));
+
+	#Remove Alaska and build another model 
+	keep.subset <- (STATE != 'AK');
+	education.noAK.lm <- lm(Y ~ X1 + X2 + X3, subset=keep.subset, data=education.table);
+	summary(education.noAK.lm)
+
+	plot(education.noAK.lm);
+	boxplot(rstandard(education.noAK.lm) ~ Region[keep.subset], col=c('red', 'green','blue', 'yellow'));
+
+	# estimate the weights by region, 
+	# choose weights to be inversely proportional to the MSE within that region.
+
+	weights = 0 * education.table$Y;
+	for (region in levels(Region)) {
+		subset.region = (Region[keep.subset] == region);
+		weights[subset.region] = 1.0 / (sum(resid(education.noAK.lm)[subset.region]^2) / sum(subset.region));
+	}
+
+	noAK.weight.lm <- lm(Y ~ X1 + X2 + X3, weights=weights, subset=keep.subset, data=education.table);
+	summary(noAK.weight.lm);
+
+	plot(noAK.weight.lm);
+	boxplot(resid(noAK.weight.lm, type='pearson') ~ Region[keep.subset], col=c('red','green','blue', 'yellow'));
+	detach(education.table);
 
