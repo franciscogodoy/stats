@@ -74,13 +74,17 @@
 	c = exp(a)/(1+exp(a))
 	print(c == b);
 
-	# Comparing models is done with deviance instead of sums of squares. The function anova will do this automatically for us. Note that the p-value is different using anova and the summary. This is because the p-value in the summary table is based on a Normal approximation and not a difference of deviances. In the lm case, these two things are identical, but not necessarily in the glm case. The test using the summary table is called a Wald test, whereas the deviance one is called a likelihood ratio test.
+	# Comparing models is done with deviance instead of sums of squares. The function anova will do this automatically for us. Note that the p-value is different 
+        # using anova and the summary. This is because the p-value in the summary table is based on a Normal approximation and not a difference of deviances. In the lm case,
+        # these two things are identical, but not necessarily in the glm case. The test using the summary table is called a Wald test, whereas the deviance one is called a
+        # likelihood ratio test.
+
 	reduced.glm = glm(Shot ~ Health.Aware, family=binomial(), data=flu.table);
 	anova(reduced.glm, flu.glm);
 	summary(flu.glm);
 
 	# Confidence intervals are also slightly different. They are constructed using the likelihood, not the summary table (which would be Wald confidence intervals)
-	 confint(flu.glm);
+	confint(flu.glm);
 
 	# Model selection 
 	step.glm = step(flu.glm, scope=list(upper=~.^2), direction='both');
@@ -88,11 +92,11 @@
 
 
 	# probit and cloglog models. This is specified using the link argument to binomial, which defaults to logit.
-	summary(glm(Shot ~ Age + Health.Aware, data=flu.table, family=binomial(link='probit')));	
+	summary(glm(Shot ~ Age + Health.Aware, data=flu.table, family=binomial(link='probit')));
 	summary(glm(Shot ~ Age + Health.Aware, data=flu.table, family=binomial(link='cloglog')));
 
 	# Logistic (binary regression models) can be fit using Iteratively Reweighted Least Squares (IRLS). 
-        # For logistic regression, this algorithm is an implementation of the Newton-Raphson algorithm used to minimize smooth functions. 
+        # For logistic regression, this algorithm is an implementation of the Newton-Raphson algorithm used to minimize smooth functions.
 	# In R, all of this is done for by glm.
 
 
@@ -104,8 +108,7 @@
 	   return(exp(y) / (1 + exp(y)))
 	}
 
-	# We need the derivative of g 
-
+	# We need the derivative of g
 	g.prime = function(x) {
 		return(1/(x*(1-x)))
 	}
