@@ -12,15 +12,14 @@
 	##########################
 
 
-	deli_data = read.table('delivery.data', sep=',', header=F);
-	names(deli_data) = c('Time','Cases', 'Distance');
-	attach(deli_data);
+	wind_data = read.table(windmill.data', sep=',', header=T);
+	attach(wind_data);
 
-	n = nrow(deli_data);
+	n = nrow(wind_data);
 
-	deli.lm= lm(Time ~ Cases + Distance, data=deli_data);	
+	wind.lm= lm(y ~ x , data=wind_data);	
 	
-	influence(deli.lm);
+	influence(wind.lm);
 
 	infl = influence.measures(deli.lm);
 
