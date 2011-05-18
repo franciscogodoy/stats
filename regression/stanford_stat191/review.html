@@ -1,0 +1,367 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Review &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Some help for R" href="helpR.html" />
+    <link rel="prev" title="Syllabus" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="helpR.html" title="Some help for R"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Syllabus"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Review</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#heights-of-husbands-and-wives">Heights of husbands and wives</a></li>
+<li><a class="reference external" href="#right-to-work-example">Right-to-work example</a></li>
+<li><a class="reference external" href="#one-sample-problem">One sample problem</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Syllabus</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="helpR.html"
+                                  title="next chapter">Some help for R</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/review.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="review">
+<span id="id1"></span><h1>Review<a class="headerlink" href="#review" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/review.pdf">here</a>.</p>
+</div>
+<div class="section" id="heights-of-husbands-and-wives">
+<h2>Heights of husbands and wives<a class="headerlink" href="#heights-of-husbands-and-wives" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre>   <span class="c1"># Load and attach the data in R</span>
+   <span class="c1"># The sep indiciates that they are comma separated</span>
+   <span class="c1"># the header option indicates that the first line</span>
+   <span class="c1"># contains the variable names</span>
+
+<span class="o">&gt;</span>    url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/heights.table&#39;</span>
+<span class="o">&gt;</span>    heights <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> sep<span class="o">=</span><span class="s">&#39;,&#39;</span><span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+   <span class="c1"># Tell R to put WIFE and HUSBAND in R&#39;s toplevel namespace</span>
+<span class="o">&gt;</span>    attach<span class="p">(</span>heights<span class="p">)</span>
+
+   <span class="c1"># Fit simple linear regression model</span>
+<span class="o">&gt;</span>    height.lm <span class="o">=</span> lm<span class="p">(</span>WIFE ~ HUSBAND<span class="p">)</span>
+
+<span class="o">&gt;</span>    plot<span class="p">(</span>HUSBAND<span class="p">,</span> WIFE<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+
+   <span class="c1"># Add a line to the plot indicating the best</span>
+   <span class="c1"># fitting line</span>
+
+<span class="o">&gt;</span>    abline<span class="p">(</span>height.lm<span class="p">,</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span>    y <span class="o">=</span> <span class="m">4</span>
+</pre></div>
+</div>
+<img alt="_images/aecd1575e0.png" src="_images/aecd1575e0.png" />
+<p>It&#8217;s also a good idea to get into the habit of removing
+some variables from the toplevel name space, otherwise you will later
+get some messages about masking.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> heights2 <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>heights2<span class="p">)</span>
+
+	The following object<span class="p">(</span>s<span class="p">)</span> are masked from heights :
+
+	 HUSBAND WIFE 
+
+
+<span class="c1"># remove them from the namespace</span>
+
+<span class="o">&gt;</span> detach<span class="p">(</span>heights<span class="p">)</span>
+<span class="o">&gt;</span> detach<span class="p">(</span>heights2<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="right-to-work-example">
+<h2>Right-to-work example<a class="headerlink" href="#right-to-work-example" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s load the data into R and put the variables into its top namespace.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># This next example is from the textbook</span>
+<span class="c1"># This time, the values are tab (&quot;\t&quot;) separated</span>
+
+<span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&quot;http://www.ilr.cornell.edu/~hadi/RABE4/Data4/P005.txt&quot;</span>
+<span class="o">&gt;</span> rtw.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&#39;\t&#39;</span><span class="p">)</span>
+
+<span class="c1"># This tells R where to find the variables named in the table</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>rtw.table<span class="p">)</span>
+</pre></div>
+</div>
+<p>We can look at boxplots of variables stratified by the right-to-work
+variable.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Cost-of-living</span>
+
+<span class="o">&gt;</span> boxplot<span class="p">(</span>COL ~ RTWL<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/6d9eb40654.png" src="_images/6d9eb40654.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Income</span>
+
+<span class="o">&gt;</span> boxplot<span class="p">(</span>Income ~ RTWL<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/7feb98ae75.png" src="_images/7feb98ae75.png" />
+<p>We can plot continuous variables against each other</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Unionization rate vs. cost-of-living</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>URate<span class="p">,</span> COL<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/e0f19c8810.png" src="_images/e0f19c8810.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Unionization rate vs. income</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>URate<span class="p">,</span> Income<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/f890baf3e6.png" src="_images/f890baf3e6.png" />
+<p>Finally, we can look at all pairwise plots</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> pairs<span class="p">(</span>rtw.table<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/ce9e2e3dba.png" src="_images/ce9e2e3dba.png" />
+<p>New York City, stands out, so let&#8217;s remove it. It is the 27th observation,
+so we use the <em>-27</em> notation to indicate we want to remove this row from the
+table.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> pairs<span class="p">(</span>rtw.table<span class="p">[</span><span class="m">-27</span><span class="p">,],</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/cc0169edee.png" src="_images/cc0169edee.png" />
+<p>Remember our good habit of detaching...</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> detach<span class="p">(</span>rtw.table<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="one-sample-problem">
+<h2>One sample problem<a class="headerlink" href="#one-sample-problem" title="Permalink to this headline">¶</a></h2>
+<p>This next example goes through some of the computations used in
+introductory statistics classes.
+You can read a little more about it on the
+Data and Story Library (DASL) <a class="reference external" href="http://lib.stat.cmu.edu/DASL/Datafiles/Calcium.html">http://lib.stat.cmu.edu/DASL/Datafiles/Calcium.html</a>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Read data into R</span>
+<span class="c1"># This is an even more advanced use of read.table</span>
+<span class="c1"># We want to skip the first 28 lines of the file that contain</span>
+<span class="c1"># some description of the data, and the data is only</span>
+<span class="c1"># 21 rows long.</span>
+
+<span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://lib.stat.cmu.edu/DASL/Datafiles/Calcium.html&#39;</span>
+<span class="o">&gt;</span> calcium.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span>header<span class="o">=</span><span class="k-Variable">T</span><span class="p">,</span>skip<span class="o">=</span><span class="m">28</span><span class="p">,</span>nrow<span class="o">=</span><span class="m">21</span><span class="p">)</span>
+
+<span class="c1"># Attach the table so R can find the variables Decrease and Treatment</span>
+
+<span class="o">&gt;</span> attach<span class="p">(</span>calcium.table<span class="p">)</span>
+
+<span class="c1"># Numerical summaries of the two groups</span>
+
+<span class="o">&gt;</span> treated <span class="o">&lt;-</span> Decrease<span class="p">[(</span>Treatment <span class="o">==</span> <span class="s">&#39;Calcium&#39;</span><span class="p">)]</span>
+<span class="o">&gt;</span> placebo <span class="o">&lt;-</span> Decrease<span class="p">[(</span>Treatment <span class="o">==</span> <span class="s">&#39;Placebo&#39;</span><span class="p">)]</span>
+
+<span class="o">&gt;</span> print<span class="p">(</span>summary<span class="p">(</span>placebo<span class="p">))</span>
+    Min.  <span class="m">1</span>st Qu.   Median     Mean  <span class="m">3</span>rd Qu.     Max. 
+<span class="m">-11.0000</span>  <span class="m">-3.0000</span>  <span class="m">-1.0000</span>  <span class="m">-0.2727</span>   <span class="m">2.5000</span>  <span class="m">12.0000</span> 
+<span class="o">&gt;</span> print<span class="p">(</span>summary<span class="p">(</span>treated<span class="p">))</span>
+   Min. <span class="m">1</span>st Qu.  Median    Mean <span class="m">3</span>rd Qu.    Max. 
+  <span class="m">-5.00</span>   <span class="m">-2.75</span>    <span class="m">4.00</span>    <span class="m">5.00</span>   <span class="m">10.75</span>   <span class="m">18.00</span> 
+
+<span class="c1"># Also, each piece of information can be extracted individually</span>
+
+<span class="o">&gt;</span> min<span class="p">(</span>treated<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">-5</span>
+<span class="o">&gt;</span> max<span class="p">(</span>treated<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">18</span>
+<span class="o">&gt;</span> median<span class="p">(</span>treated<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">4</span>
+<span class="o">&gt;</span> print<span class="p">(</span>quantile<span class="p">(</span>treated<span class="p">,</span> probs<span class="o">=</span>c<span class="p">(</span><span class="m">0.25</span><span class="p">,</span><span class="m">0.75</span><span class="p">)))</span>
+  <span class="m">25</span><span class="o">%</span>   <span class="m">75</span><span class="o">%</span> 
+<span class="m">-2.75</span> <span class="m">10.75</span> 
+<span class="o">&gt;</span> sd<span class="p">(</span>treated<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">8.743251</span>
+<span class="o">&gt;</span> var<span class="p">(</span>treated<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">76.44444</span>
+</pre></div>
+</div>
+<p>Boxplots are common graphical summaries of a sample, showing the median and
+inter-quartile ranges.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> boxplot<span class="p">(</span>Decrease ~ Treatment<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/3b0f9467b6.png" src="_images/3b0f9467b6.png" />
+<p>Histograms are also useful summaries of the data.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> hist<span class="p">(</span>treated<span class="p">,</span> main<span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Decrease&#39;</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/f79d8915ad.png" src="_images/f79d8915ad.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> hist<span class="p">(</span>placebo<span class="p">,</span> main<span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Decrease&#39;</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/b1fb4584c5.png" src="_images/b1fb4584c5.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Get confidence interval for population</span>
+<span class="c1"># mean Decrease (ignoring Treatment)</span>
+
+<span class="o">&gt;</span> CI <span class="o">&lt;-</span> c<span class="p">(</span>mean<span class="p">(</span>Decrease<span class="p">)</span><span class="o">-</span>qt<span class="p">(</span><span class="m">0.975</span><span class="p">,</span><span class="m">20</span><span class="p">)</span><span class="o">*</span>sd<span class="p">(</span>Decrease<span class="p">)</span><span class="o">/</span>sqrt<span class="p">(</span><span class="m">21</span><span class="p">),</span>
+<span class="o">+</span> mean<span class="p">(</span>Decrease<span class="p">)</span><span class="o">+</span>qt<span class="p">(</span><span class="m">0.975</span><span class="p">,</span><span class="m">20</span><span class="p">)</span><span class="o">*</span>sd<span class="p">(</span>Decrease<span class="p">)</span><span class="o">/</span>sqrt<span class="p">(</span><span class="m">21</span><span class="p">))</span>
+<span class="o">&gt;</span> print<span class="p">(</span>CI<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">-1.261000</span>  <span class="m">5.737191</span>
+</pre></div>
+</div>
+<p>You can do these calculations with the builtin-function called <em>t.test</em>.
+For instance, to test whether the mean decrease is 0:</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> print<span class="p">(</span>t.test<span class="p">(</span>Decrease<span class="p">))</span>
+
+	One Sample t<span class="o">-</span>test
+
+data:  Decrease 
+t <span class="o">=</span> <span class="m">1.3342</span><span class="p">,</span> df <span class="o">=</span> <span class="m">20</span><span class="p">,</span> p<span class="o">-</span>value <span class="o">=</span> <span class="m">0.1971</span>
+alternative hypothesis: true mean is not equal to <span class="m">0</span> 
+<span class="m">95</span> percent confidence interval:
+ <span class="m">-1.261000</span>  <span class="m">5.737191</span> 
+sample estimates:
+mean of x 
+ <span class="m">2.238095</span> 
+</pre></div>
+</div>
+<p>The two sample T-test can either be done with the assumption of
+equal variances in groups or without. The <em>usual</em> one that is
+taught in introductory classes has the variances assumed to be equal.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> print<span class="p">(</span>t.test<span class="p">(</span>Decrease ~ Treatment<span class="p">,</span> var.equal<span class="o">=</span><span class="k-Variable">T</span><span class="p">))</span>
+
+	Two Sample t<span class="o">-</span>test
+
+data:  Decrease by Treatment 
+t <span class="o">=</span> <span class="m">1.6341</span><span class="p">,</span> df <span class="o">=</span> <span class="m">19</span><span class="p">,</span> p<span class="o">-</span>value <span class="o">=</span> <span class="m">0.1187</span>
+alternative hypothesis: true difference in means is not equal to <span class="m">0</span> 
+<span class="m">95</span> percent confidence interval:
+ <span class="m">-1.480770</span> <span class="m">12.026224</span> 
+sample estimates:
+mean in group Calcium mean in group Placebo 
+            <span class="m">5.0000000</span>            <span class="m">-0.2727273</span> 
+</pre></div>
+</div>
+<p>As discussed in the notes, the two sample problem is really a regression
+model. We can therefore fit it with the function <em>lm</em>. Note that the
+coefficient <em>TreatmentPlacebo</em> is the difference between the group <em>Calcium</em>
+and <em>Placebo</em>. Also, note that the p-values are the same.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> summary<span class="p">(</span>lm<span class="p">(</span>Decrease ~ Treatment<span class="p">))</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Decrease ~ Treatment<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-10.7273</span>  <span class="m">-4.7273</span>  <span class="m">-0.7273</span>   <span class="m">5.0000</span>  <span class="m">13.0000</span> 
+
+Coefficients:
+                 Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>  
+<span class="p">(</span>Intercept<span class="p">)</span>         <span class="m">5.000</span>      <span class="m">2.335</span>   <span class="m">2.141</span>   <span class="m">0.0454</span> <span class="o">*</span>
+TreatmentPlacebo   <span class="m">-5.273</span>      <span class="m">3.227</span>  <span class="m">-1.634</span>   <span class="m">0.1187</span>  
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">7.385</span> on <span class="m">19</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.1232</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.07708</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:  <span class="m">2.67</span> on <span class="m">1</span> and <span class="m">19</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.1187</span> 
+
+<span class="o">&gt;</span> detach<span class="p">(</span>calcium.table<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="helpR.html" title="Some help for R"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Syllabus"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

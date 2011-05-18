@@ -1,12 +1,8 @@
-	install.packages('car');
+  install.packages('car');
 	library(car);
 
-	b14 = read.table('b14.csv', sep=',', header=T);
-	attach(b14);
-	pairs(b14, pch=23, bg='orange', cex.labels=4, cex=2);
-	plot(b14[,c(1,2,3,4,6)], pch=23, bg='orange', cex=2);
-	plot(b14[,c(1,2,6)], pch=23, bg='orange', cex=2);
-	plot(b14[,c(3,4,6)], pch=23, bg='orange', cex=2);
+  B14.table <- read.csv("C:/Users/th/git/mva/regression/B14.table.csv");
+
 
 	n = nrow(b14);
 

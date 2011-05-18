@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Correlated errors &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Model selection" href="selection.html" />
+    <link rel="prev" title="Transformations & Weighted Least Squares" href="transformations.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="selection.html" title="Model selection"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="transformations.html" title="Transformations & Weighted Least Squares"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Correlated errors</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#monthly-bond-return">Monthly Bond Return</a></li>
+<li><a class="reference external" href="#simulating-time-series">Simulating time series</a></li>
+<li><a class="reference external" href="#consumer-expenditure">Consumer expenditure</a></li>
+<li><a class="reference external" href="#housing-starts-data">Housing starts data</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="transformations.html"
+                                  title="previous chapter">Transformations &amp; Weighted Least Squares</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="selection.html"
+                                  title="next chapter">Model selection</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/correlated_errors.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="correlated-errors">
+<span id="id1"></span><h1>Correlated errors<a class="headerlink" href="#correlated-errors" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/correlated_errors.pdf">here</a>.</p>
+</div>
+<div class="section" id="monthly-bond-return">
+<h2>Monthly Bond Return<a class="headerlink" href="#monthly-bond-return" title="Permalink to this headline">¶</a></h2>
+<p>Financial time series are often cited as examples of time series
+showing autocorrelation. Here are 50 months of bond data from a course
+on <a class="reference external" href="http://faculty.chicagobooth.edu/ruey.tsay/teaching/fts/">financial time series</a>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://faculty.chicagobooth.edu/ruey.tsay/teaching/fts/m-bnd.dat&#39;</span>
+<span class="o">&gt;</span> bond.data <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">)</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>bond.data<span class="p">[</span><span class="m">100</span>:<span class="m">150</span><span class="p">,</span><span class="m">2</span><span class="p">],</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Month&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Return&#39;</span><span class="p">,</span>
+<span class="o">+</span>      lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/b9f4675851.png" src="_images/b9f4675851.png" />
+<p>Let&#8217;s look at its autocorrelation function. If the errors are independent,
+then the autocorrelation function should, roughly speaking, just have a spike
+at 0.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> acf<span class="p">(</span>bond.data<span class="p">[,</span><span class="m">2</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="_images/da8c1ff59f.png" src="_images/da8c1ff59f.png" />
+</div>
+<div class="section" id="simulating-time-series">
+<h2>Simulating time series<a class="headerlink" href="#simulating-time-series" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we will simulate some <em>AR(1)</em> time series and show
+that ignoring autocorrelation can result in incorrect inference in the form
+of confidence intervals with incorrect widths. Hence,
+we must correct for autocorrelation before we compute
+confidence intervals, test hypotheses, etc.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> ntrial <span class="o">=</span> <span class="m">500</span>
+<span class="o">&gt;</span> nsample <span class="o">=</span> <span class="m">100</span>
+<span class="o">&gt;</span> rho <span class="o">=</span> <span class="m">0.9</span>
+<span class="o">&gt;</span> mu <span class="o">=</span> <span class="m">1.0</span>
+
+<span class="c1"># This little function simulates our time series</span>
+
+<span class="o">&gt;</span> get.sample <span class="o">=</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>arima.sim<span class="p">(</span>list<span class="p">(</span>ar<span class="o">=</span>rho<span class="p">),</span> nsample<span class="p">)</span> <span class="o">+</span> mu<span class="p">)</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> Z <span class="o">=</span> get.sample<span class="p">()</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>Z<span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/07d4c33fd2.png" src="_images/07d4c33fd2.png" />
+<p>Given a time series, its autocorrelation function is a summary
+of the autocorrelation. For an AR(1) time series, it should
+look like exponential decay.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> acf<span class="p">(</span>Z<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/6201fdd299.png" src="_images/6201fdd299.png" />
+<p>Finally, we show that ignoring autocorrelation will yield
+incorrect confidence intervals. The red curve is (an estimate of) the true
+density of the sample mean, while the blue curve is what
+we think it should be if the errors were independent. The blue
+curve is way too optimistic.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> sample.mean <span class="o">=</span> numeric<span class="p">(</span>ntrial<span class="p">)</span>
+<span class="o">&gt;</span> sample.var <span class="o">=</span> numeric<span class="p">(</span>ntrial<span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:ntrial<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   cur.sample <span class="o">=</span> get.sample<span class="p">()</span>
+<span class="o">+</span>   sample.mean<span class="p">[</span>i<span class="p">]</span> <span class="o">=</span> mean<span class="p">(</span>cur.sample<span class="p">)</span>
+<span class="o">+</span>   sample.var<span class="p">[</span>i<span class="p">]</span> <span class="o">=</span> var<span class="p">(</span>cur.sample<span class="p">)</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> data.frame<span class="p">(</span>mean<span class="o">=</span>mean<span class="p">(</span>sample.mean<span class="p">),</span> sd<span class="o">=</span>sqrt<span class="p">(</span>mean<span class="p">(</span>sample.var<span class="p">)))</span>
+      mean       sd
+<span class="m">1</span> <span class="m">1.005845</span> <span class="m">2.109318</span>
+
+<span class="o">&gt;</span> xval <span class="o">=</span> seq<span class="p">(</span><span class="m">-5</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">0.05</span><span class="p">)</span>
+<span class="o">&gt;</span> Y <span class="o">=</span> c<span class="p">(</span>density<span class="p">(</span>sample.mean<span class="p">)$</span>y<span class="p">,</span> dnorm<span class="p">(</span>xval<span class="p">,</span> mean<span class="o">=</span>mean<span class="p">(</span>sample.mean<span class="p">),</span>
+<span class="o">+</span>                   sd<span class="o">=</span>sqrt<span class="p">(</span>mean<span class="p">(</span>sample.var<span class="p">)</span> <span class="o">/</span> nsample<span class="p">)))</span>
+<span class="o">&gt;</span> X <span class="o">=</span> c<span class="p">(</span>density<span class="p">(</span>sample.mean<span class="p">)$</span>x<span class="p">,</span> xval<span class="p">)</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> Y<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">,</span> main<span class="o">=</span><span class="s">&#39;Actual and &quot;expected&quot; density of sample mean&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>xval<span class="p">,</span> dnorm<span class="p">(</span>xval<span class="p">,</span> mean<span class="o">=</span>mean<span class="p">(</span>sample.mean<span class="p">),</span>
+<span class="o">+</span>                   sd<span class="o">=</span>sqrt<span class="p">(</span>mean<span class="p">(</span>sample.var<span class="p">)</span> <span class="o">/</span> nsample<span class="p">)),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>density<span class="p">(</span>sample.mean<span class="p">),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/0c676d9a91.png" src="_images/0c676d9a91.png" />
+</div>
+<div class="section" id="consumer-expenditure">
+<h2>Consumer expenditure<a class="headerlink" href="#consumer-expenditure" title="Permalink to this headline">¶</a></h2>
+<p>This is the consumer expenditure example from Chapter 8 of the  textbook.</p>
+<p># Consumer expenditure example</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/expenditure.table&#39;</span>
+<span class="o">&gt;</span> expenditure.table <span class="o">=</span>read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>expenditure.table<span class="p">)</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>Stock<span class="p">,</span> Expenditure<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/7f6229d84c.png" src="_images/7f6229d84c.png" />
+<p>Let&#8217;s fit a simple linear regression model
+and investigate the residuals. They show a clear pattern.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> exp.lm <span class="o">=</span> lm<span class="p">(</span>Expenditure ~ Stock<span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>resid<span class="p">(</span>exp.lm<span class="p">),</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/56669140a8.png" src="_images/56669140a8.png" />
+<p>Another way of seeing this is via their autocorrelation function.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> acf<span class="p">(</span>resid<span class="p">(</span>exp.lm<span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/25b26dc356.png" src="_images/25b26dc356.png" />
+<p>We will first test for autocorrelation
+using the Durbin-Watson test statistc,
+then estimate the AR(1) autocorrelation and remove it by
+&#8220;whitening&#8221; the data.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> library<span class="p">(</span>car<span class="p">)</span> <span class="c1"># durbin.watson is in the &quot;car&quot; package</span>
+<span class="o">&gt;</span> durbin.watson<span class="p">(</span>exp.lm<span class="p">)</span>
+ lag Autocorrelation D<span class="o">-</span>W Statistic p<span class="o">-</span>value
+   <span class="m">1</span>       <span class="m">0.7506122</span>     <span class="m">0.3282113</span>       <span class="m">0</span>
+ Alternative hypothesis: rho <span class="o">!=</span> <span class="m">0</span>
+</pre></div>
+</div>
+<p>The Durbin-Watson test actually gives an estimate of rho.
+We will &#8220;whiten&#8221; the data and refit the model. Notice
+the difference in the standard errors and <em>t</em> values.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> rho <span class="o">=</span> durbin.watson<span class="p">(</span>exp.lm<span class="p">)$</span>r
+
+<span class="c1"># whiten the data &quot;by hand&quot;</span>
+
+<span class="o">&gt;</span> wExp <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>Expenditure<span class="p">)</span> <span class="o">-</span> <span class="m">1</span><span class="p">)</span>
+<span class="o">&gt;</span> wStock <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>Expenditure<span class="p">)</span> <span class="o">-</span> <span class="m">1</span><span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">2</span>:length<span class="p">(</span>Expenditure<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>   wExp<span class="p">[</span>i<span class="o">-</span><span class="m">1</span><span class="p">]</span> <span class="o">=</span> Expenditure<span class="p">[</span>i<span class="p">]</span> <span class="o">-</span> rho <span class="o">*</span> Expenditure<span class="p">[</span>i<span class="o">-</span><span class="m">1</span><span class="p">]</span>
+<span class="o">+</span>   wStock<span class="p">[</span>i<span class="o">-</span><span class="m">1</span><span class="p">]</span> <span class="o">=</span> Stock<span class="p">[</span>i<span class="p">]</span> <span class="o">-</span> rho <span class="o">*</span> Stock<span class="p">[</span>i<span class="o">-</span><span class="m">1</span><span class="p">]</span>
+<span class="o">+</span> <span class="p">}</span>
+
+
+
+<span class="o">&gt;</span> exp.whitened.lm <span class="o">=</span> lm<span class="p">(</span>wExp ~ wStock<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>exp.whitened.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> wExp ~ wStock<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-4.3737</span> <span class="m">-0.7856</span>  <span class="m">0.2747</span>  <span class="m">1.0408</span>  <span class="m">3.9786</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-53.6959</span>    <span class="m">13.6164</span>  <span class="m">-3.943</span>  <span class="m">0.00105</span> <span class="o">**</span> 
+wStock        <span class="m">2.6434</span>     <span class="m">0.3069</span>   <span class="m">8.614</span> <span class="m">1.32</span>e<span class="o">-</span><span class="m">07</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">2.263</span> on <span class="m">17</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.8136</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.8026</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:  <span class="m">74.2</span> on <span class="m">1</span> and <span class="m">17</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">1.315</span>e<span class="o">-</span><span class="m">07</span> 
+
+<span class="o">&gt;</span> summary<span class="p">(</span>exp.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Expenditure ~ Stock<span class="p">)</span>
+
+Residuals:
+   Min     <span class="m">1</span>Q Median     <span class="m">3</span>Q    Max 
+<span class="m">-7.176</span> <span class="m">-3.396</span>  <span class="m">1.396</span>  <span class="m">2.928</span>  <span class="m">6.361</span> 
+
+Coefficients:
+             Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-154.7192</span>    <span class="m">19.8500</span>  <span class="m">-7.794</span> <span class="m">3.54</span>e<span class="o">-</span><span class="m">07</span> <span class="o">***</span>
+Stock          <span class="m">2.3004</span>     <span class="m">0.1146</span>  <span class="m">20.080</span> <span class="m">8.99</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">3.983</span> on <span class="m">18</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9573</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9549</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">403.2</span> on <span class="m">1</span> and <span class="m">18</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">8.988</span>e<span class="o">-</span><span class="m">14</span> 
+</pre></div>
+</div>
+<img alt="images/inline/6c4c3e3674.png" src="images/inline/6c4c3e3674.png" />
+<p>Residuals in the whitened model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>resid<span class="p">(</span>exp.whitened.lm<span class="p">),</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/e3d8434c57.png" src="_images/e3d8434c57.png" />
+<p>Autocorrelation also looks better</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> acf<span class="p">(</span>resid<span class="p">(</span>exp.whitened.lm<span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/234922b033.png" src="_images/234922b033.png" />
+</div>
+<div class="section" id="housing-starts-data">
+<h2>Housing starts data<a class="headerlink" href="#housing-starts-data" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, apparent autocorrelation
+can be explained by an unobserved variable.</p>
+<p>In this housing starts example,
+we are trying to model the number of housing
+starts <em>H</em> as a function of the eligible home-buying
+population, <em>P</em>. As we&#8217;ve seen in 2009,
+housing is heavily dependent on availability
+of credit. So, we also have a measure of the availability
+of financing, <em>D</em>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="selection.html" title="Model selection"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="transformations.html" title="Transformations & Weighted Least Squares"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

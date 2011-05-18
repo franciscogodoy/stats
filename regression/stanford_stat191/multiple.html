@@ -1,0 +1,544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Multiple linear regression model &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Diagnostics and influence" href="diagnostics.html" />
+    <link rel="prev" title="Diagnostics for simple linear regression model" href="simple_diagnostics.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="diagnostics.html" title="Diagnostics and influence"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="simple_diagnostics.html" title="Diagnostics for simple linear regression model"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Multiple linear regression model</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#job-supervisor-example">Job supervisor example</a></li>
+<li><a class="reference external" href="#partial-regression-coefficients">Partial regression coefficients</a></li>
+<li><a class="reference external" href="#matrix-representation-of-coefficients">Matrix representation of coefficients</a></li>
+<li><a class="reference external" href="#confidence-intervals-by-hand">Confidence intervals by hand</a></li>
+<li><a class="reference external" href="#a-general-f-test">A general <em>F</em> test</a></li>
+<li><a class="reference external" href="#imposing-constraints-on-parameters">Imposing constraints on parameters</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="simple_diagnostics.html"
+                                  title="previous chapter">Diagnostics for simple linear regression model</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="diagnostics.html"
+                                  title="next chapter">Diagnostics and influence</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/multiple.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="multiple-linear-regression-model">
+<span id="multiple"></span><h1>Multiple linear regression model<a class="headerlink" href="#multiple-linear-regression-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/multiple.pdf">here</a>.
+This corresponds
+to Chapter 3 of <a class="reference external" href="http://www.ilr.cornell.edu/%7Ehadi/RABE/#Download&quot;">Regression Analysis by Example</a>.</p>
+</div>
+<div class="section" id="job-supervisor-example">
+<h2>Job supervisor example<a class="headerlink" href="#job-supervisor-example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/supervisor.table&#39;</span>
+<span class="o">&gt;</span> supervisor.table <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>supervisor.table<span class="p">)</span>
+
+<span class="o">&gt;</span> pairs<span class="p">(</span>supervisor.table<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span>
+<span class="o">+</span> cex.labels<span class="o">=</span><span class="m">6</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/4418cca38f.png" src="_images/4418cca38f.png" />
+<p>Fitting the model is basically exactly the same as simple linear
+regression, except instead of only one variable on the right of &#8220;~&#8221; in
+the formula, we add whichever variables we want.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> supervisor.lm <span class="o">=</span> lm<span class="p">(</span>Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3 <span class="o">+</span> X4 <span class="o">+</span>
+<span class="o">+</span> X5 <span class="o">+</span> X6<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>supervisor.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3 <span class="o">+</span> X4 <span class="o">+</span> X5 <span class="o">+</span> X6<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-10.9418</span>  <span class="m">-4.3555</span>   <span class="m">0.3158</span>   <span class="m">5.5425</span>  <span class="m">11.5990</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">10.78708</span>   <span class="m">11.58926</span>   <span class="m">0.931</span> <span class="m">0.361634</span>    
+X1           <span class="m">0.61319</span>    <span class="m">0.16098</span>   <span class="m">3.809</span> <span class="m">0.000903</span> <span class="o">***</span>
+X2          <span class="m">-0.07305</span>    <span class="m">0.13572</span>  <span class="m">-0.538</span> <span class="m">0.595594</span>    
+X3           <span class="m">0.32033</span>    <span class="m">0.16852</span>   <span class="m">1.901</span> <span class="m">0.069925</span> <span class="m">.</span>  
+X4           <span class="m">0.08173</span>    <span class="m">0.22148</span>   <span class="m">0.369</span> <span class="m">0.715480</span>    
+X5           <span class="m">0.03838</span>    <span class="m">0.14700</span>   <span class="m">0.261</span> <span class="m">0.796334</span>    
+X6          <span class="m">-0.21706</span>    <span class="m">0.17821</span>  <span class="m">-1.218</span> <span class="m">0.235577</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">7.068</span> on <span class="m">23</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.7326</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.6628</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:  <span class="m">10.5</span> on <span class="m">6</span> and <span class="m">23</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">1.240</span>e<span class="o">-</span><span class="m">05</span> 
+</pre></div>
+</div>
+<p>Confidence intervals for the coefficients are identical.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> confint<span class="p">(</span>supervisor.lm<span class="p">)</span>
+                   <span class="m">2.5</span> <span class="o">%</span>     <span class="m">97.5</span> <span class="o">%</span>
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-13.18712881</span> <span class="m">34.7612816</span>
+X1            <span class="m">0.28016866</span>  <span class="m">0.9462066</span>
+X2           <span class="m">-0.35381806</span>  <span class="m">0.2077178</span>
+X3           <span class="m">-0.02827872</span>  <span class="m">0.6689430</span>
+X4           <span class="m">-0.37642935</span>  <span class="m">0.5398936</span>
+X5           <span class="m">-0.26570179</span>  <span class="m">0.3424647</span>
+X6           <span class="m">-0.58571106</span>  <span class="m">0.1515977</span>
+</pre></div>
+</div>
+<p>Similarly, we can extract confidence and prediction intervals
+for the regression function at new values of the covariates.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> predict<span class="p">(</span>supervisor.lm<span class="p">,</span> list<span class="p">(</span>X1<span class="o">=</span><span class="m">60</span><span class="p">,</span> X2<span class="o">=</span><span class="m">50</span><span class="p">,</span>
+<span class="o">+</span> X3<span class="o">=</span><span class="m">55</span><span class="p">,</span> X4<span class="o">=</span><span class="m">65</span><span class="p">,</span> X5<span class="o">=</span><span class="m">75</span><span class="p">,</span> X6<span class="o">=</span><span class="m">40</span><span class="p">),</span> interval<span class="o">=</span><span class="s">&#39;confidence&#39;</span><span class="p">)</span>
+       fit     lwr      upr
+<span class="m">1</span> <span class="m">61.05302</span> <span class="m">57.3486</span> <span class="m">64.75744</span>
+<span class="o">&gt;</span> predict<span class="p">(</span>supervisor.lm<span class="p">,</span> list<span class="p">(</span>X1<span class="o">=</span><span class="m">60</span><span class="p">,</span> X2<span class="o">=</span><span class="m">50</span><span class="p">,</span>
+<span class="o">+</span> X3<span class="o">=</span><span class="m">55</span><span class="p">,</span> X4<span class="o">=</span><span class="m">65</span><span class="p">,</span> X5<span class="o">=</span><span class="m">75</span><span class="p">,</span> X6<span class="o">=</span><span class="m">40</span><span class="p">),</span> interval<span class="o">=</span><span class="s">&#39;prediction&#39;</span><span class="p">)</span>
+       fit      lwr      upr
+<span class="m">1</span> <span class="m">61.05302</span> <span class="m">45.96979</span> <span class="m">76.13626</span>
+</pre></div>
+</div>
+<p>The sums of squares and <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> are defined analogously
+to those in simple linear regression.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Sums of squares</span>
+
+<span class="o">&gt;</span> Y
+ <span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">43</span> <span class="m">63</span> <span class="m">71</span> <span class="m">61</span> <span class="m">81</span> <span class="m">43</span> <span class="m">58</span> <span class="m">71</span> <span class="m">72</span> <span class="m">67</span> <span class="m">64</span> <span class="m">67</span> <span class="m">69</span> <span class="m">68</span> <span class="m">77</span> <span class="m">81</span> <span class="m">74</span> <span class="m">65</span> <span class="m">65</span> <span class="m">50</span> <span class="m">50</span> <span class="m">64</span> <span class="m">53</span> <span class="m">40</span> <span class="m">63</span>
+<span class="p">[</span><span class="m">26</span><span class="p">]</span> <span class="m">66</span> <span class="m">78</span> <span class="m">48</span> <span class="m">85</span> <span class="m">82</span>
+<span class="o">&gt;</span> X1
+ <span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">51</span> <span class="m">64</span> <span class="m">70</span> <span class="m">63</span> <span class="m">78</span> <span class="m">55</span> <span class="m">67</span> <span class="m">75</span> <span class="m">82</span> <span class="m">61</span> <span class="m">53</span> <span class="m">60</span> <span class="m">62</span> <span class="m">83</span> <span class="m">77</span> <span class="m">90</span> <span class="m">85</span> <span class="m">60</span> <span class="m">70</span> <span class="m">58</span> <span class="m">40</span> <span class="m">61</span> <span class="m">66</span> <span class="m">37</span> <span class="m">54</span>
+<span class="p">[</span><span class="m">26</span><span class="p">]</span> <span class="m">77</span> <span class="m">75</span> <span class="m">57</span> <span class="m">85</span> <span class="m">82</span>
+
+<span class="o">&gt;</span> SST <span class="o">=</span> sum<span class="p">((</span>Y <span class="o">-</span> mean<span class="p">(</span>Y<span class="p">))</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> MST <span class="o">=</span> SST <span class="o">/</span> <span class="p">(</span>length<span class="p">(</span>Y<span class="p">)</span> <span class="o">-</span> <span class="m">1</span><span class="p">)</span>
+<span class="o">&gt;</span> SSE <span class="o">=</span> sum<span class="p">(</span>resid<span class="p">(</span>supervisor.lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> MSE <span class="o">=</span> SSE <span class="o">/</span> supervisor.lm<span class="p">$</span>df.residual
+
+<span class="c1"># The adjusted R^2 is expressed in terms</span>
+<span class="c1"># of mean squares rather</span>
+<span class="c1"># than sums of squares</span>
+
+<span class="o">&gt;</span> R2 <span class="o">=</span> <span class="m">1</span> <span class="o">-</span> SSE<span class="o">/</span>SST
+<span class="o">&gt;</span> R2.adj <span class="o">=</span> <span class="m">1</span> <span class="o">-</span> MSE <span class="o">/</span> MST
+
+<span class="o">&gt;</span> data.frame<span class="p">(</span>R2<span class="p">,</span>R2.adj<span class="p">)</span>
+        R2   R2.adj
+<span class="m">1</span> <span class="m">0.732602</span> <span class="m">0.662846</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="partial-regression-coefficients">
+<h2>Partial regression coefficients<a class="headerlink" href="#partial-regression-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>The estimated coefficients in a multiple linear regression
+model are known as <em>partial regression coefficients</em>.
+This is because
+the coefficient for, say, <em>X6</em> can be thought
+of as the simple linear regression coefficient
+of <em>Y</em> on <em>X6</em> after regressing out, or controlling for, everything
+else.
+More formally,  the coefficient
+for <em>X6</em> is what you would get if you first regress <em>Y</em> and <em>X6</em> onto
+everything except <em>X6</em>, and take
+the residuals, creating two new variables, <em>Z</em> and <em>W</em>
+and then fit a simple linear regression model with <em>Z</em> as the outcome
+and <em>W</em> as the covariate.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> supervisor.lm<span class="p">$</span>coef
+<span class="p">(</span>Intercept<span class="p">)</span>          X1          X2          X3          X4          X5 
+<span class="m">10.78707639</span>  <span class="m">0.61318761</span> <span class="m">-0.07305014</span>  <span class="m">0.32033212</span>  <span class="m">0.08173213</span>  <span class="m">0.03838145</span> 
+         X6 
+<span class="m">-0.21705668</span> 
+
+<span class="c1"># regress X6 onto everything else</span>
+<span class="c1"># and call the residuals W</span>
+<span class="c1"># this is the part of X6 that is</span>
+<span class="c1"># not explained by any of the other variables</span>
+
+<span class="o">&gt;</span> W <span class="o">=</span> resid<span class="p">(</span>lm<span class="p">(</span>X6 ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3 <span class="o">+</span> X4 <span class="o">+</span> X5<span class="p">))</span>
+
+<span class="c1"># do the same for Y</span>
+<span class="o">&gt;</span> Z <span class="o">=</span> resid<span class="p">(</span>lm<span class="p">(</span>Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3 <span class="o">+</span> X4 <span class="o">+</span> X5<span class="p">))</span>
+
+<span class="c1"># coefficient of W is the same as in original model</span>
+<span class="o">&gt;</span> lm<span class="p">(</span>Z~W<span class="p">)$</span>coef<span class="p">[</span><span class="s">&quot;W&quot;</span><span class="p">]</span>
+         W 
+<span class="m">-0.2170567</span> 
+</pre></div>
+</div>
+</div>
+<div class="section" id="matrix-representation-of-coefficients">
+<h2>Matrix representation of coefficients<a class="headerlink" href="#matrix-representation-of-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>We can construct the least squares estimates by hand,
+using matrices.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> n <span class="o">=</span> length<span class="p">(</span>Y<span class="p">)</span>
+<span class="o">&gt;</span> X <span class="o">=</span> cbind<span class="p">(</span>rep<span class="p">(</span><span class="m">1</span><span class="p">,</span>n<span class="p">),</span> X1<span class="p">,</span> X2<span class="p">,</span> X3<span class="p">,</span> X4<span class="p">,</span> X5<span class="p">,</span> X6<span class="p">)</span>
+
+
+<span class="o">&gt;</span> colnames<span class="p">(</span>X<span class="p">)[</span><span class="m">1</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;(Intercept)&#39;</span>
+
+<span class="c1"># solve for beta.hat</span>
+
+<span class="o">&gt;</span> beta <span class="o">=</span> solve<span class="p">(</span>t<span class="p">(</span>X<span class="p">)</span> <span class="o">%*%</span> X<span class="p">)</span> <span class="o">%*%</span> t<span class="p">(</span>X<span class="p">)</span> <span class="o">%*%</span> Y
+
+<span class="c1"># fitted values</span>
+
+<span class="o">&gt;</span> Y.hat <span class="o">=</span> X <span class="o">%*%</span> beta
+
+<span class="c1"># covariance matrix</span>
+
+<span class="o">&gt;</span> sigma.hat <span class="o">=</span> sqrt<span class="p">(</span>sum<span class="p">((</span>Y <span class="o">-</span> Y.hat<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>n <span class="o">-</span> ncol<span class="p">(</span>X<span class="p">)))</span>
+<span class="o">&gt;</span> cov.beta <span class="o">=</span> sigma.hat<span class="o">^</span><span class="m">2</span> <span class="o">*</span> solve<span class="p">(</span>t<span class="p">(</span>X<span class="p">)</span> <span class="o">%*%</span> X<span class="p">)</span>
+<span class="o">&gt;</span> cov.beta
+             <span class="p">(</span>Intercept<span class="p">)</span>            X1           X2           X3           X4
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">134.31088348</span> <span class="m">-1.270544</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.181523035</span> <span class="m">-0.307411947</span> <span class="m">-0.216292873</span>
+X1           <span class="m">-0.12705442</span>  <span class="m">2.591556</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.008174628</span> <span class="m">-0.008184570</span> <span class="m">-0.018572460</span>
+X2           <span class="m">-0.18152304</span> <span class="m">-8.174628</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">0.018421192</span> <span class="m">-0.003122857</span>  <span class="m">0.002306358</span>
+X3           <span class="m">-0.30741195</span> <span class="m">-8.184570</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.003122857</span>  <span class="m">0.028399098</span> <span class="m">-0.007689886</span>
+X4           <span class="m">-0.21629287</span> <span class="m">-1.857246</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">0.002306358</span> <span class="m">-0.007689886</span>  <span class="m">0.049052362</span>
+X5           <span class="m">-1.13204004</span>  <span class="m">2.336757</span>e<span class="o">-</span><span class="m">05</span> <span class="m">-0.000457418</span>  <span class="m">0.004847088</span> <span class="m">-0.009130728</span>
+X6            <span class="m">0.03278243</span>  <span class="m">1.153912</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.004464340</span> <span class="m">-0.010427982</span> <span class="m">-0.016854411</span>
+                       X5           X6
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-1.132040</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">0.032782433</span>
+X1           <span class="m">2.336757</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">0.011539122</span>
+X2          <span class="m">-4.574180</span>e<span class="o">-</span><span class="m">04</span> <span class="m">-0.004464340</span>
+X3           <span class="m">4.847088</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.010427982</span>
+X4          <span class="m">-9.130728</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.016854411</span>
+X5           <span class="m">2.160766</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.003349602</span>
+X6          <span class="m">-3.349602</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">0.031758616</span>
+
+<span class="c1"># this is the Std. Error column of summary(supervisor.lm)</span>
+
+<span class="o">&gt;</span> sqrt<span class="p">(</span>diag<span class="p">(</span>cov.beta<span class="p">))</span>
+<span class="p">(</span>Intercept<span class="p">)</span>          X1          X2          X3          X4          X5 
+ <span class="m">11.5892572</span>   <span class="m">0.1609831</span>   <span class="m">0.1357247</span>   <span class="m">0.1685203</span>   <span class="m">0.2214777</span>   <span class="m">0.1469954</span> 
+         X6 
+  <span class="m">0.1782095</span> 
+
+<span class="c1"># an easier way to get the covariance matrix</span>
+
+<span class="o">&gt;</span> vcov<span class="p">(</span>supervisor.lm<span class="p">)</span>
+             <span class="p">(</span>Intercept<span class="p">)</span>            X1           X2           X3           X4
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">134.31088348</span> <span class="m">-1.270544</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.181523035</span> <span class="m">-0.307411947</span> <span class="m">-0.216292873</span>
+X1           <span class="m">-0.12705442</span>  <span class="m">2.591556</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.008174628</span> <span class="m">-0.008184570</span> <span class="m">-0.018572460</span>
+X2           <span class="m">-0.18152304</span> <span class="m">-8.174628</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">0.018421192</span> <span class="m">-0.003122857</span>  <span class="m">0.002306358</span>
+X3           <span class="m">-0.30741195</span> <span class="m">-8.184570</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.003122857</span>  <span class="m">0.028399098</span> <span class="m">-0.007689886</span>
+X4           <span class="m">-0.21629287</span> <span class="m">-1.857246</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">0.002306358</span> <span class="m">-0.007689886</span>  <span class="m">0.049052362</span>
+X5           <span class="m">-1.13204004</span>  <span class="m">2.336757</span>e<span class="o">-</span><span class="m">05</span> <span class="m">-0.000457418</span>  <span class="m">0.004847088</span> <span class="m">-0.009130728</span>
+X6            <span class="m">0.03278243</span>  <span class="m">1.153912</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.004464340</span> <span class="m">-0.010427982</span> <span class="m">-0.016854411</span>
+                       X5           X6
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-1.132040</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">0.032782433</span>
+X1           <span class="m">2.336757</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">0.011539122</span>
+X2          <span class="m">-4.574180</span>e<span class="o">-</span><span class="m">04</span> <span class="m">-0.004464340</span>
+X3           <span class="m">4.847088</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.010427982</span>
+X4          <span class="m">-9.130728</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.016854411</span>
+X5           <span class="m">2.160766</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.003349602</span>
+X6          <span class="m">-3.349602</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">0.031758616</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="confidence-intervals-by-hand">
+<h2>Confidence intervals by hand<a class="headerlink" href="#confidence-intervals-by-hand" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we write a function that
+explicitly computes a confidence interval
+(and can be used for predicition intervals
+with the &#8220;extra&#8221; argument).
+This exercise shows the calculations that R
+is doing under the hood: the function <em>predict</em>
+is generally going to be fine for our
+purposes.</p>
+<div class="highlight-r"><div class="highlight"><pre>CI.lm <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>cur.lm<span class="p">,</span> a<span class="p">,</span> level<span class="o">=</span><span class="m">0.95</span><span class="p">,</span> extra<span class="o">=</span><span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="c1"># the center of the confidence interval</span>
+  center <span class="o">=</span> sum<span class="p">(</span>a<span class="o">*</span>cur.lm<span class="p">$</span>coef<span class="p">)</span>
+
+  <span class="c1"># the estimate of sigma^2</span>
+  sigma.sq <span class="o">=</span> sum<span class="p">(</span>resid<span class="p">(</span>cur.lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> cur.lm<span class="p">$</span>df.resid
+
+  <span class="c1"># the standard error of sum(a*cur.lm$coef)</span>
+  se <span class="o">=</span> sqrt<span class="p">(</span>extra <span class="o">*</span> sigma.sq <span class="o">+</span> sum<span class="p">((</span>a <span class="o">%*%</span> vcov<span class="p">(</span>cur.lm<span class="p">))</span> <span class="o">*</span> a<span class="p">))</span>
+
+  <span class="c1"># the degrees of freedom for the t-statistic</span>
+  df <span class="o">=</span> cur.lm<span class="p">$</span>df
+
+  <span class="c1"># the quantile used in the confidence interval</span>
+
+  q <span class="o">=</span> qt<span class="p">((</span><span class="m">1</span> <span class="o">-</span> level<span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="p">,</span> df<span class="p">,</span> lower.tail<span class="o">=</span><span class="k-Variable">F</span><span class="p">)</span>
+
+  <span class="c1"># upper, lower limits</span>
+  U <span class="o">=</span> center <span class="o">+</span> se <span class="o">*</span> q
+  L <span class="o">=</span> center <span class="o">-</span> se <span class="o">*</span> q
+  <span class="kr">return</span><span class="p">(</span>data.frame<span class="p">(</span>center<span class="p">,</span> L<span class="p">,</span> U<span class="p">))</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>With this function, we can do basically anything
+that predict did, as far as confidence intervals go.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> CI.lm<span class="p">(</span>supervisor.lm<span class="p">,</span> c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">65</span><span class="p">,</span><span class="m">50</span><span class="p">,</span><span class="m">55</span><span class="p">,</span><span class="m">64</span><span class="p">,</span><span class="m">75</span><span class="p">,</span><span class="m">40</span><span class="p">))</span>
+    center        L        U
+<span class="m">1</span> <span class="m">64.03723</span> <span class="m">61.14249</span> <span class="m">66.93197</span>
+
+<span class="o">&gt;</span> predict<span class="p">(</span>supervisor.lm<span class="p">,</span>
+<span class="o">+</span> list<span class="p">(</span>X1<span class="o">=</span><span class="m">65</span><span class="p">,</span>X2<span class="o">=</span><span class="m">50</span><span class="p">,</span>X3<span class="o">=</span><span class="m">55</span><span class="p">,</span>X4<span class="o">=</span><span class="m">64</span><span class="p">,</span>X5<span class="o">=</span><span class="m">75</span><span class="p">,</span>X6<span class="o">=</span><span class="m">40</span><span class="p">),</span>
+<span class="o">+</span> interval<span class="o">=</span><span class="s">&#39;confidence&#39;</span><span class="p">)</span>
+       fit      lwr      upr
+<span class="m">1</span> <span class="m">64.03723</span> <span class="m">61.14249</span> <span class="m">66.93197</span>
+</pre></div>
+</div>
+<p>By using the <em>extra</em> argument, we can make
+prediction intervals.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> CI.lm<span class="p">(</span>supervisor.lm<span class="p">,</span> c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">65</span><span class="p">,</span><span class="m">50</span><span class="p">,</span><span class="m">55</span><span class="p">,</span><span class="m">64</span><span class="p">,</span><span class="m">75</span><span class="p">,</span><span class="m">40</span><span class="p">),</span> extra<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+    center        L        U
+<span class="m">1</span> <span class="m">64.03723</span> <span class="m">49.13217</span> <span class="m">78.94229</span>
+
+<span class="o">&gt;</span> predict<span class="p">(</span>supervisor.lm<span class="p">,</span>
+<span class="o">+</span> list<span class="p">(</span>X1<span class="o">=</span><span class="m">65</span><span class="p">,</span>X2<span class="o">=</span><span class="m">50</span><span class="p">,</span>X3<span class="o">=</span><span class="m">55</span><span class="p">,</span>X4<span class="o">=</span><span class="m">64</span><span class="p">,</span>X5<span class="o">=</span><span class="m">75</span><span class="p">,</span>X6<span class="o">=</span><span class="m">40</span><span class="p">),</span>
+<span class="o">+</span> interval<span class="o">=</span><span class="s">&#39;prediction&#39;</span><span class="p">)</span>
+       fit      lwr      upr
+<span class="m">1</span> <span class="m">64.03723</span> <span class="m">49.13217</span> <span class="m">78.94229</span>
+</pre></div>
+</div>
+<p>If we want, we can set the intercept term to 0. This allows
+us to construct confidence interval for, say,
+how much a supervisor&#8217;s rating will increase
+if we change <em>X1</em> and <em>X2</em> each by 5 points, leaving
+everything else unchanged. Therefore, what we want is a
+confidence interval for
+5 times the coefficient of X1 + 5 times the coefficient
+of X2.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> CI.lm<span class="p">(</span>supervisor.lm<span class="p">,</span> c<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">))</span>
+    center         L        U
+<span class="m">1</span> <span class="m">2.700687</span> <span class="m">0.9703106</span> <span class="m">4.431064</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-general-f-test">
+<h2>A general <em>F</em> test<a class="headerlink" href="#a-general-f-test" title="Permalink to this headline">¶</a></h2>
+<p>When comparing two models, one a special case of the other (i.e.
+one nested in the other), we can test if the smaller
+model (the special case) is roughly as good as the
+larger model in describing our outcome. This is typically
+tested using an <em>F</em> test based on comparing
+the two models. The following function does this.</p>
+<div class="highlight-r"><div class="highlight"><pre>f.test.lm <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>R.lm<span class="p">,</span> <span class="k-Variable">F</span><span class="m">.</span>lm<span class="p">)</span> <span class="p">{</span>
+   SSE.R <span class="o">=</span> sum<span class="p">(</span>resid<span class="p">(</span>R.lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+   SSE.F <span class="o">=</span> sum<span class="p">(</span>resid<span class="p">(</span><span class="k-Variable">F</span><span class="m">.</span>lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+   df.num <span class="o">=</span> R.lm<span class="p">$</span>df <span class="o">-</span> <span class="k-Variable">F</span><span class="m">.</span>lm<span class="p">$</span>df
+   df.den <span class="o">=</span> <span class="k-Variable">F</span><span class="m">.</span>lm<span class="p">$</span>df
+   <span class="k-Variable">F</span> <span class="o">=</span> <span class="p">((</span>SSE.R <span class="o">-</span> SSE.F<span class="p">)</span> <span class="o">/</span> df.num<span class="p">)</span> <span class="o">/</span> <span class="p">(</span>SSE.F <span class="o">/</span> df.den<span class="p">)</span>
+   p.value <span class="o">=</span> <span class="m">1</span> <span class="o">-</span> pf<span class="p">(</span><span class="k-Variable">F</span><span class="p">,</span> df.num<span class="p">,</span> df.den<span class="p">)</span>
+   <span class="kr">return</span><span class="p">(</span>data.frame<span class="p">(</span><span class="k-Variable">F</span><span class="p">,</span> df.num<span class="p">,</span> df.den<span class="p">,</span> p.value<span class="p">))</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can try dropping variables <em>X2</em> and <em>X3</em> with our new function
+and see the results as an <em>F</em> test.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> reduced.lm <span class="o">=</span> lm<span class="p">(</span>Y ~ X1 <span class="o">+</span> X4 <span class="o">+</span> X5 <span class="o">+</span> X6<span class="p">)</span>
+<span class="o">&gt;</span> f.test.lm<span class="p">(</span>reduced.lm<span class="p">,</span> supervisor.lm<span class="p">)</span>
+         <span class="k-Variable">F</span> df.num df.den   p.value
+<span class="m">1</span> <span class="m">1.846191</span>      <span class="m">2</span>     <span class="m">23</span> <span class="m">0.1804745</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="imposing-constraints-on-parameters">
+<h2>Imposing constraints on parameters<a class="headerlink" href="#imposing-constraints-on-parameters" title="Permalink to this headline">¶</a></h2>
+<p>For instance, we might suppose that the
+coefficients for <em>X1</em> and <em>X3</em> are the same
+and want to test this. We do this, again, by
+comparing a &#8220;full model&#8221; and a &#8220;reduced model&#8221;.</p>
+<p>For simplicity, we will just consider a model with only variables
+<em>X1</em> and <em>X3</em> and test whether the coefficients of <em>X1</em> and <em>X3</em> are equal.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> reduced.lm <span class="o">=</span> lm<span class="p">(</span>Y~X1<span class="o">+</span>X3<span class="p">)</span>
+</pre></div>
+</div>
+<p>As discussed in the notes, we can do this simply by
+making a new regressor</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> Z <span class="o">=</span> X1 <span class="o">+</span> X3
+<span class="o">&gt;</span> equal.lm <span class="o">=</span> lm<span class="p">(</span>Y ~ Z<span class="p">)</span>
+
+<span class="o">&gt;</span> anova<span class="p">(</span>equal.lm<span class="p">,</span> reduced.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: Y ~ Z
+Model <span class="m">2</span>: Y ~ X1 <span class="o">+</span> X3
+  Res.Df     RSS Df Sum of Sq      <span class="k-Variable">F</span>  Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>  
+<span class="m">1</span>     <span class="m">28</span> <span class="m">1424.59</span>                              
+<span class="m">2</span>     <span class="m">27</span> <span class="m">1254.65</span>  <span class="m">1</span>    <span class="m">169.95</span> <span class="m">3.6572</span> <span class="m">0.06649</span> <span class="m">.</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+</pre></div>
+</div>
+<p>The book also considers an example <img class="math" src="_images/math/06ff8cc43fae226df08145c949cf67601d981be9.png" alt="\beta_1+\beta_3=1"/>.
+This time, since the outcomes are different, we can&#8217;t use
+<em>anova</em>, but <em>f.test.lm</em> does work</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> Z <span class="o">=</span> X1 <span class="o">-</span> X3
+<span class="o">&gt;</span> W <span class="o">=</span> Y <span class="o">-</span> X3
+
+<span class="o">&gt;</span> f.test.lm<span class="p">(</span>lm<span class="p">(</span>W ~ Z<span class="p">),</span> reduced.lm<span class="p">)</span>
+         <span class="k-Variable">F</span> df.num df.den   p.value
+<span class="m">1</span> <span class="m">1.611813</span>      <span class="m">1</span>     <span class="m">27</span> <span class="m">0.2150713</span>
+</pre></div>
+</div>
+<p>What we had to do above was subtract <em>X3</em> from <em>Y</em> on the right hand
+side of the formula. R has a way to do this called using an <em>offset</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> anova<span class="p">(</span>lm<span class="p">(</span>Y ~ Z<span class="p">,</span> offset<span class="o">=</span>X3<span class="p">),</span> reduced.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: Y ~ Z
+Model <span class="m">2</span>: Y ~ X1 <span class="o">+</span> X3
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span> Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="m">1</span>     <span class="m">28</span> <span class="m">1329.5</span>                           
+<span class="m">2</span>     <span class="m">27</span> <span class="m">1254.7</span>  <span class="m">1</span>      <span class="m">74.9</span> <span class="m">1.6118</span> <span class="m">0.2151</span>
+</pre></div>
+</div>
+<p>Looking at the resulting models, they are almost identical, the
+<img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> is different because in the first model, the
+outcome is <em>Y</em>, and the second, the outcome is <em>Y-X3</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> summary<span class="p">(</span>lm<span class="p">(</span>Y ~ Z<span class="p">,</span> offset<span class="o">=</span>X3<span class="p">))</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Y ~ Z<span class="p">,</span> offset <span class="o">=</span> X3<span class="p">)</span>
+
+Residuals:
+   Min     <span class="m">1</span>Q Median     <span class="m">3</span>Q    Max 
+<span class="m">-9.799</span> <span class="m">-6.242</span>  <span class="m">0.252</span>  <span class="m">4.911</span> <span class="m">12.263</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">1.1665</span>     <span class="m">1.7079</span>   <span class="m">0.683</span>      <span class="m">0.5</span>    
+Z             <span class="m">0.6938</span>     <span class="m">0.1129</span>   <span class="m">6.147</span> <span class="m">1.23</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">6.891</span> on <span class="m">28</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.7505</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.7415</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">84.21</span> on <span class="m">1</span> and <span class="m">28</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">6.196</span>e<span class="o">-</span><span class="m">10</span> 
+
+<span class="o">&gt;</span> summary<span class="p">(</span>lm<span class="p">(</span>W ~ Z<span class="p">))</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> W ~ Z<span class="p">)</span>
+
+Residuals:
+   Min     <span class="m">1</span>Q Median     <span class="m">3</span>Q    Max 
+<span class="m">-9.799</span> <span class="m">-6.242</span>  <span class="m">0.252</span>  <span class="m">4.911</span> <span class="m">12.263</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">1.1665</span>     <span class="m">1.7079</span>   <span class="m">0.683</span>      <span class="m">0.5</span>    
+Z             <span class="m">0.6938</span>     <span class="m">0.1129</span>   <span class="m">6.147</span> <span class="m">1.23</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">6.891</span> on <span class="m">28</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.5744</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.5592</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">37.79</span> on <span class="m">1</span> and <span class="m">28</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">1.233</span>e<span class="o">-</span><span class="m">06</span> 
+</pre></div>
+</div>
+<p>Remember to detach...</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> detach<span class="p">(</span>supervisor.table<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="diagnostics.html" title="Diagnostics and influence"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="simple_diagnostics.html" title="Diagnostics for simple linear regression model"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

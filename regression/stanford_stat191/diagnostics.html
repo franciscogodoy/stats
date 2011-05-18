@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Diagnostics and influence &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Interactions & ANOVA" href="interactions.html" />
+    <link rel="prev" title="Multiple linear regression model" href="multiple.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="interactions.html" title="Interactions & ANOVA"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multiple.html" title="Multiple linear regression model"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Diagnostics and influence</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#scottish-hill-races">Scottish hill races</a></li>
+<li><a class="reference external" href="#standard-diagnostic-plots">Standard diagnostic plots</a></li>
+<li><a class="reference external" href="#dfbetas">DFBETAS</a></li>
+<li><a class="reference external" href="#cook-s-distance">Cook&#8217;s distance</a></li>
+<li><a class="reference external" href="#dffits">DFFITS</a></li>
+<li><a class="reference external" href="#bonferroni-outlier-test">Bonferroni outlier test</a></li>
+<li><a class="reference external" href="#all-the-influence-measures">All the influence measures</a></li>
+<li><a class="reference external" href="#added-variable-plots">Added variable plots</a></li>
+<li><a class="reference external" href="#component-residual-plots">Component+residual plots</a></li>
+<li><a class="reference external" href="#hat-values">Hat values</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="multiple.html"
+                                  title="previous chapter">Multiple linear regression model</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="interactions.html"
+                                  title="next chapter">Interactions &amp; ANOVA</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/diagnostics.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="diagnostics-and-influence">
+<span id="diagnostics"></span><h1>Diagnostics and influence<a class="headerlink" href="#diagnostics-and-influence" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/diagnostics.pdf">here</a>.
+This corresponds
+to Chapter 4 of <a class="reference external" href="http://www.ilr.cornell.edu/%7Ehadi/RABE/#Download&quot;">Regression Analysis by Example</a>.</p>
+</div>
+<div class="section" id="scottish-hill-races">
+<h2>Scottish hill races<a class="headerlink" href="#scottish-hill-races" title="Permalink to this headline">¶</a></h2>
+<p>You will need the <em>car</em> package for this example. Here is
+how to install it. Windows users can use the menu
+to install a new package.</p>
+<div class="highlight-r"><div class="highlight"><pre>install.packages<span class="p">(</span><span class="s">&#39;car&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With the package installed. You can load it with the <em>library</em> function.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> library<span class="p">(</span>car<span class="p">)</span>
+
+<span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/scottish_races.table&#39;</span>
+<span class="o">&gt;</span> races.table <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>races.table<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we plot the data to be used in our model. As expected, <em>Time</em>
+does increase with <em>Distance</em> and <em>Climb</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>races.table<span class="p">[,</span><span class="m">3</span>:<span class="m">5</span><span class="p">],</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/5426cc728a.png" src="_images/5426cc728a.png" />
+<p>Finally, let&#8217;s fit the model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> races.lm <span class="o">=</span> lm<span class="p">(</span>Time ~ Distance <span class="o">+</span> Climb<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="standard-diagnostic-plots">
+<h2>Standard diagnostic plots<a class="headerlink" href="#standard-diagnostic-plots" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>races.lm<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span> <span class="p">,</span>bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span>cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/c158b29344.png" src="_images/c158b29344.png" />
+</div>
+<div class="section" id="dfbetas">
+<h2>DFBETAS<a class="headerlink" href="#dfbetas" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>dfbetas<span class="p">(</span>races.lm<span class="p">)[,</span><span class="s">&#39;Climb&#39;</span><span class="p">],</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&quot;DFBETA (Climb)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/22337f9a00.png" src="_images/22337f9a00.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>dfbetas<span class="p">(</span>races.lm<span class="p">)[,</span><span class="s">&#39;Distance&#39;</span><span class="p">],</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&quot;DFBETA (Distance)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/aaf46be76f.png" src="_images/aaf46be76f.png" />
+</div>
+<div class="section" id="cook-s-distance">
+<h2>Cook&#8217;s distance<a class="headerlink" href="#cook-s-distance" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>cooks.distance<span class="p">(</span>races.lm<span class="p">),</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&quot;Cook&#39;s distance&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/d90b17541a.png" src="_images/d90b17541a.png" />
+</div>
+<div class="section" id="dffits">
+<h2>DFFITS<a class="headerlink" href="#dffits" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>dffits<span class="p">(</span>races.lm<span class="p">),</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span>
+<span class="o">+</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&quot;DFFITS&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/7f072c5ce5.png" src="_images/7f072c5ce5.png" />
+</div>
+<div class="section" id="bonferroni-outlier-test">
+<h2>Bonferroni outlier test<a class="headerlink" href="#bonferroni-outlier-test" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> outlier.test<span class="p">(</span>races.lm<span class="p">)</span>
+
+max<span class="o">|</span>rstudent<span class="o">|</span> <span class="o">=</span> <span class="m">7.610958</span><span class="p">,</span> degrees of freedom <span class="o">=</span> <span class="m">31</span><span class="p">,</span>
+unadjusted p <span class="o">=</span> <span class="m">1.396846</span>e<span class="o">-</span><span class="m">08</span><span class="p">,</span> Bonferroni p <span class="o">=</span> <span class="m">4.88896</span>e<span class="o">-</span><span class="m">07</span>
+
+Observation: <span class="m">18</span> 
+</pre></div>
+</div>
+</div>
+<div class="section" id="all-the-influence-measures">
+<h2>All the influence measures<a class="headerlink" href="#all-the-influence-measures" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> influence.measures<span class="p">(</span>races.lm<span class="p">)</span>
+Influence measures of
+	 lm<span class="p">(</span>formula <span class="o">=</span> Time ~ Distance <span class="o">+</span> Climb<span class="p">)</span> :
+
+     dfb.1_  dfb.Dstn  dfb.Clmb    dffit  cov.r   cook.d    hat inf
+<span class="m">1</span>   <span class="m">0.03781</span> <span class="m">-0.016613</span> <span class="m">-0.004743</span>  <span class="m">0.03861</span> <span class="m">1.1595</span> <span class="m">5.13</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.0538</span>    
+<span class="m">2</span>  <span class="m">-0.05959</span>  <span class="m">0.067223</span> <span class="m">-0.073404</span> <span class="m">-0.11957</span> <span class="m">1.1269</span> <span class="m">4.88</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0495</span>    
+<span class="m">3</span>  <span class="m">-0.04858</span> <span class="m">-0.006707</span>  <span class="m">0.028036</span> <span class="m">-0.06310</span> <span class="m">1.1329</span> <span class="m">1.37</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0384</span>    
+<span class="m">4</span>  <span class="m">-0.00767</span> <span class="m">-0.005677</span>  <span class="m">0.008766</span> <span class="m">-0.01368</span> <span class="m">1.1556</span> <span class="m">6.44</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.0485</span>    
+<span class="m">5</span>  <span class="m">-0.05047</span>  <span class="m">0.084718</span> <span class="m">-0.145019</span> <span class="m">-0.20949</span> <span class="m">1.0837</span> <span class="m">1.47</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.0553</span>    
+<span class="m">6</span>   <span class="m">0.00348</span> <span class="m">-0.004311</span>  <span class="m">0.007567</span>  <span class="m">0.01219</span> <span class="m">1.1536</span> <span class="m">5.12</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.0468</span>    
+<span class="m">7</span>  <span class="m">-0.89062</span> <span class="m">-0.712743</span>  <span class="m">2.364517</span>  <span class="m">2.69897</span> <span class="m">0.8179</span> <span class="m">1.89</span>e<span class="o">+</span><span class="m">00</span> <span class="m">0.4204</span>   <span class="o">*</span>
+<span class="m">8</span>  <span class="m">-0.00845</span> <span class="m">-0.001650</span>  <span class="m">0.005567</span> <span class="m">-0.01116</span> <span class="m">1.1467</span> <span class="m">4.29</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.0410</span>    
+<span class="m">9</span>  <span class="m">-0.01437</span>  <span class="m">0.000913</span>  <span class="m">0.006163</span> <span class="m">-0.01664</span> <span class="m">1.1453</span> <span class="m">9.52</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.0403</span>    
+<span class="m">10</span>  <span class="m">0.04703</span>  <span class="m">0.013056</span> <span class="m">-0.036517</span>  <span class="m">0.06399</span> <span class="m">1.1431</span> <span class="m">1.41</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0457</span>    
+<span class="m">11</span> <span class="m">-0.30124</span>  <span class="m">0.768854</span> <span class="m">-0.479935</span>  <span class="m">0.78583</span> <span class="m">3.4524</span> <span class="m">2.11</span>e<span class="o">-</span><span class="m">01</span> <span class="m">0.6898</span>   <span class="o">*</span>
+<span class="m">12</span> <span class="m">-0.01150</span>  <span class="m">0.009662</span> <span class="m">-0.007493</span> <span class="m">-0.01673</span> <span class="m">1.1492</span> <span class="m">9.62</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.0435</span>    
+<span class="m">13</span> <span class="m">-0.03173</span> <span class="m">-0.029912</span> <span class="m">-0.000707</span> <span class="m">-0.11771</span> <span class="m">1.0922</span> <span class="m">4.70</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0323</span>    
+<span class="m">14</span>  <span class="m">0.11803</span>  <span class="m">0.042034</span> <span class="m">-0.104886</span>  <span class="m">0.16610</span> <span class="m">1.1039</span> <span class="m">9.34</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0513</span>    
+<span class="m">15</span> <span class="m">-0.10038</span>  <span class="m">0.057704</span> <span class="m">-0.022318</span> <span class="m">-0.11921</span> <span class="m">1.1062</span> <span class="m">4.83</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0388</span>    
+<span class="m">16</span> <span class="m">-0.01852</span>  <span class="m">0.006789</span> <span class="m">-0.099867</span> <span class="m">-0.21136</span> <span class="m">1.0501</span> <span class="m">1.49</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.0444</span>    
+<span class="m">17</span>  <span class="m">0.01197</span> <span class="m">-0.066512</span>  <span class="m">0.034459</span> <span class="m">-0.08338</span> <span class="m">1.1908</span> <span class="m">2.39</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0831</span>    
+<span class="m">18</span>  <span class="m">1.75830</span> <span class="m">-0.406551</span> <span class="m">-0.655944</span>  <span class="m">1.84240</span> <span class="m">0.0493</span> <span class="m">4.07</span>e<span class="o">-</span><span class="m">01</span> <span class="m">0.0554</span>   <span class="o">*</span>
+<span class="m">19</span> <span class="m">-0.15890</span>  <span class="m">0.044315</span>  <span class="m">0.029416</span> <span class="m">-0.17485</span> <span class="m">1.0634</span> <span class="m">1.03</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.0385</span>    
+<span class="m">20</span>  <span class="m">0.00865</span>  <span class="m">0.001423</span> <span class="m">-0.005941</span>  <span class="m">0.01101</span> <span class="m">1.1526</span> <span class="m">4.17</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.0459</span>    
+<span class="m">21</span>  <span class="m">0.04776</span> <span class="m">-0.010017</span> <span class="m">-0.019196</span>  <span class="m">0.05031</span> <span class="m">1.1611</span> <span class="m">8.70</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.0566</span>    
+<span class="m">22</span> <span class="m">-0.01890</span>  <span class="m">0.013863</span> <span class="m">-0.006469</span> <span class="m">-0.02235</span> <span class="m">1.1546</span> <span class="m">1.72</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.0483</span>    
+<span class="m">23</span> <span class="m">-0.04117</span>  <span class="m">0.033985</span> <span class="m">-0.032914</span> <span class="m">-0.06939</span> <span class="m">1.1327</span> <span class="m">1.65</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0398</span>    
+<span class="m">24</span>  <span class="m">0.07483</span> <span class="m">-0.046382</span>  <span class="m">0.006427</span>  <span class="m">0.07839</span> <span class="m">1.1571</span> <span class="m">2.11</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0584</span>    
+<span class="m">25</span>  <span class="m">0.03691</span> <span class="m">-0.012632</span> <span class="m">-0.008256</span>  <span class="m">0.03808</span> <span class="m">1.1557</span> <span class="m">4.99</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.0507</span>    
+<span class="m">26</span> <span class="m">-0.13774</span>  <span class="m">0.136139</span> <span class="m">-0.101317</span> <span class="m">-0.19784</span> <span class="m">1.0914</span> <span class="m">1.32</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.0550</span>    
+<span class="m">27</span> <span class="m">-0.02921</span> <span class="m">-0.005702</span>  <span class="m">0.019240</span> <span class="m">-0.03857</span> <span class="m">1.1431</span> <span class="m">5.11</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.0410</span>    
+<span class="m">28</span> <span class="m">-0.04765</span>  <span class="m">0.006938</span>  <span class="m">0.014993</span> <span class="m">-0.05447</span> <span class="m">1.1345</span> <span class="m">1.02</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0376</span>    
+<span class="m">29</span> <span class="m">-0.00214</span>  <span class="m">0.000648</span> <span class="m">-0.000329</span> <span class="m">-0.00310</span> <span class="m">1.1338</span> <span class="m">3.30</span>e<span class="o">-</span><span class="m">06</span> <span class="m">0.0299</span>    
+<span class="m">30</span> <span class="m">-0.08532</span> <span class="m">-0.007706</span>  <span class="m">0.054842</span> <span class="m">-0.10363</span> <span class="m">1.1323</span> <span class="m">3.67</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.0482</span>    
+<span class="m">31</span>  <span class="m">0.02099</span>  <span class="m">0.170132</span> <span class="m">-0.373652</span> <span class="m">-0.44140</span> <span class="m">1.0960</span> <span class="m">6.41</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.1216</span>    
+<span class="m">32</span> <span class="m">-0.02858</span> <span class="m">-0.008694</span>  <span class="m">0.023276</span> <span class="m">-0.03931</span> <span class="m">1.1513</span> <span class="m">5.31</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.0475</span>    
+<span class="m">33</span> <span class="m">-0.15822</span>  <span class="m">0.097011</span>  <span class="m">0.155697</span>  <span class="m">0.33383</span> <span class="m">1.2609</span> <span class="m">3.77</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.1716</span>    
+<span class="m">34</span> <span class="m">-0.00356</span>  <span class="m">0.000706</span>  <span class="m">0.001056</span> <span class="m">-0.00393</span> <span class="m">1.1461</span> <span class="m">5.31</span>e<span class="o">-</span><span class="m">06</span> <span class="m">0.0403</span>    
+<span class="m">35</span>  <span class="m">0.20872</span> <span class="m">-0.199049</span> <span class="m">-0.100907</span> <span class="m">-0.39445</span> <span class="m">1.2764</span> <span class="m">5.24</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.1910</span>    
+</pre></div>
+</div>
+</div>
+<div class="section" id="added-variable-plots">
+<h2>Added variable plots<a class="headerlink" href="#added-variable-plots" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> av.plots<span class="p">(</span>races.lm<span class="p">,</span> <span class="s">&#39;Climb&#39;</span><span class="p">)</span>
+integer<span class="p">(</span><span class="m">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/4155e1c682.png" src="_images/4155e1c682.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> av.plots<span class="p">(</span>races.lm<span class="p">,</span> <span class="s">&#39;Distance&#39;</span><span class="p">)</span>
+integer<span class="p">(</span><span class="m">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/1f52e9a470.png" src="_images/1f52e9a470.png" />
+</div>
+<div class="section" id="component-residual-plots">
+<h2>Component+residual plots<a class="headerlink" href="#component-residual-plots" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> cr.plots<span class="p">(</span>races.lm<span class="p">,</span> <span class="s">&#39;Climb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/97da419d62.png" src="_images/97da419d62.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> cr.plots<span class="p">(</span>races.lm<span class="p">,</span> <span class="s">&#39;Distance&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/56dda9b3a1.png" src="_images/56dda9b3a1.png" />
+</div>
+<div class="section" id="hat-values">
+<h2>Hat values<a class="headerlink" href="#hat-values" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>hatvalues<span class="p">(</span>races.lm<span class="p">),</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Hat values&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/e1c1e810fa.png" src="_images/e1c1e810fa.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="interactions.html" title="Interactions & ANOVA"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multiple.html" title="Multiple linear regression model"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

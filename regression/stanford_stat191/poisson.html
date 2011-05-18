@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Poisson regression &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Penalized regression: ridge, LASSO" href="penalized.html" />
+    <link rel="prev" title="Logistic regression" href="logistic.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="penalized.html" title="Penalized regression: ridge, LASSO"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="logistic.html" title="Logistic regression"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Poisson regression</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#afterlife-example">Afterlife example</a></li>
+<li><a class="reference external" href="#lumber-example">Lumber example</a></li>
+<li><a class="reference external" href="#marijuana-use">Marijuana use</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="logistic.html"
+                                  title="previous chapter">Logistic regression</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="penalized.html"
+                                  title="next chapter">Penalized regression: ridge, LASSO</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/poisson.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="poisson-regression">
+<span id="poisson"></span><h1>Poisson regression<a class="headerlink" href="#poisson-regression" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/poisson.pdf">here</a>.</p>
+</div>
+<div class="section" id="afterlife-example">
+<h2>Afterlife example<a class="headerlink" href="#afterlife-example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><pre>&gt; Y = c(435,147,375,134)
+&gt; G = factor(c('M','M','F','F'))
+&gt; B = factor(c('Y','N','Y','N'))
+
+&gt; N = sum(Y)
+&gt; piG = c((435+147)/N,(375+134)/N)
+&gt; piB = c((435+375)/N,(147+134)/N)
+
+&gt; E = N*c(piG[1]*piB[1], piG[1]*piB[2], piG[2]*piB[1], piG[2]*piB[2])
+
+# Pearson's X^2
+&gt; X2 = sum((Y - E)^2/E)
+
+# Deviance test statistic, the
+# two G's are equal because sum(Y)=sum(E)
+
+&gt; G1 = sum(2*Y*log(Y/E))
+&gt; G2 = sum(2*(Y*log(Y/E)+Y-E))
+
+# The Pearson X^2 is close to the G's but not identical
+
+&gt; c(X2,G1,G2)
+[1] 0.1620840 0.1619951 0.1619951
+
+# Without the correction, you get the Pearson X^2
+&gt; chisq.test(matrix(Y,2,2), correct=F)
+
+	Pearson's Chi-squared test
+
+data:  matrix(Y, 2, 2) 
+X-squared = 0.1621, df = 1, p-value = 0.6872
+
+
+# Default is to correct...
+&gt; chisq.test(matrix(Y,2,2))
+
+	Pearson's Chi-squared test with Yates' continuity correction
+
+data:  matrix(Y, 2, 2) 
+X-squared = 0.111, df = 1, p-value = 0.739
+
+
+# Using a glm
+
+&gt; cont.glm = glm(Y ~ G+B, family=poisson())
+&gt; print(summary(cont.glm))
+
+Call:
+glm(formula = Y ~ G + B, family = poisson())
+
+Deviance Residuals: 
+      1        2        3        4  
+ 0.1394  -0.2377  -0.1494   0.2524  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  4.87595    0.06787  71.839   &lt;2e-16 ***
+GM           0.13402    0.06069   2.208   0.0272 *  
+BY           1.05868    0.06923  15.291   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 272.68544  on 3  degrees of freedom
+Residual deviance:   0.16200  on 1  degrees of freedom
+AIC: 35.407
+
+Number of Fisher Scoring iterations: 3
+
+
+&gt; E = predict(cont.glm, type='response')</pre>
+</div>
+</div>
+<div class="section" id="lumber-example">
+<h2>Lumber example<a class="headerlink" href="#lumber-example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/lumber.table&#39;</span>
+
+<span class="o">&gt;</span> lumber.table <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+<span class="c1"># Fit using ordinary least squares</span>
+
+<span class="o">&gt;</span> lumber.lm <span class="o">=</span> lm<span class="p">(</span>Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span> Store<span class="p">,</span> data<span class="o">=</span>lumber.table<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>lumber.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span> 
+    Store<span class="p">,</span> data <span class="o">=</span> lumber.table<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-6.8067</span> <span class="m">-1.7834</span> <span class="m">-0.2094</span>  <span class="m">1.8458</span> <span class="m">10.1409</span> 
+
+Coefficients:
+              Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">1.943</span>e<span class="o">+</span><span class="m">01</span>  <span class="m">2.163</span>e<span class="o">+</span><span class="m">00</span>   <span class="m">8.984</span> <span class="m">1.24</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+Housing      <span class="m">6.600</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">1.521</span>e<span class="o">-</span><span class="m">03</span>   <span class="m">4.339</span> <span class="m">3.33</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+Income      <span class="m">-1.162</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">2.283</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">-5.088</span> <span class="m">1.61</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+Age         <span class="m">-3.593</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">1.879</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">-1.912</span>   <span class="m">0.0587</span> <span class="m">.</span>  
+Competitor   <span class="m">1.904</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">2.579</span>e<span class="o">-</span><span class="m">01</span>   <span class="m">7.382</span> <span class="m">3.99</span>e<span class="o">-</span><span class="m">11</span> <span class="o">***</span>
+Store       <span class="m">-1.710</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">1.739</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">-9.837</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">3.213</span> on <span class="m">104</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.7766</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.7659</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">72.32</span> on <span class="m">5</span> and <span class="m">104</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+
+<span class="c1"># Fit model using log link</span>
+
+<span class="o">&gt;</span> lumber.glm <span class="o">=</span> glm<span class="p">(</span>Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span> Store<span class="p">,</span> family<span class="o">=</span>poisson<span class="p">(),</span> data<span class="o">=</span>lumber.table<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>lumber.glm<span class="p">)</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span> 
+    Store<span class="p">,</span> family <span class="o">=</span> poisson<span class="p">(),</span> data <span class="o">=</span> lumber.table<span class="p">)</span>
+
+Deviance Residuals: 
+       Min          <span class="m">1</span>Q      Median          <span class="m">3</span>Q         Max  
+<span class="m">-2.932</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">-5.887</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">-9.434</span>e<span class="o">-</span><span class="m">05</span>   <span class="m">5.927</span>e<span class="o">-</span><span class="m">01</span>   <span class="m">2.234</span>e<span class="o">+</span><span class="m">00</span>  
+
+Coefficients:
+              Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">2.942</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">2.072</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">14.198</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+Housing      <span class="m">6.058</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">1.421</span>e<span class="o">-</span><span class="m">04</span>   <span class="m">4.262</span> <span class="m">2.02</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+Income      <span class="m">-1.169</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">2.112</span>e<span class="o">-</span><span class="m">06</span>  <span class="m">-5.534</span> <span class="m">3.13</span>e<span class="o">-</span><span class="m">08</span> <span class="o">***</span>
+Age         <span class="m">-3.726</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">1.782</span>e<span class="o">-</span><span class="m">03</span>  <span class="m">-2.091</span>   <span class="m">0.0365</span> <span class="o">*</span>  
+Competitor   <span class="m">1.684</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">2.577</span>e<span class="o">-</span><span class="m">02</span>   <span class="m">6.534</span> <span class="m">6.39</span>e<span class="o">-</span><span class="m">11</span> <span class="o">***</span>
+Store       <span class="m">-1.288</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">1.620</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">-7.948</span> <span class="m">1.89</span>e<span class="o">-</span><span class="m">15</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for poisson family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">422.22</span>  on <span class="m">109</span>  degrees of freedom
+Residual deviance: <span class="m">114.99</span>  on <span class="m">104</span>  degrees of freedom
+AIC: <span class="m">571.02</span>
+
+Number of Fisher Scoring iterations: <span class="m">4</span>
+</pre></div>
+</div>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>lumber.lm<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/5e3fca1256.png" src="_images/5e3fca1256.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>lumber.glm<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/29e5336e51.png" src="_images/29e5336e51.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Check to see if Store and Competitor can be dropped</span>
+
+<span class="o">&gt;</span> lumber.R.glm <span class="o">=</span> glm<span class="p">(</span>Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age<span class="p">,</span> family<span class="o">=</span>poisson<span class="p">(</span>link<span class="o">=</span><span class="s">&#39;log&#39;</span><span class="p">),</span> data<span class="o">=</span>lumber.table<span class="p">)</span>
+
+<span class="c1"># partial deviance test of full vs. reduced</span>
+
+<span class="o">&gt;</span> anova<span class="p">(</span>lumber.R.glm<span class="p">,</span> lumber.glm<span class="p">)</span>
+Analysis of Deviance Table
+
+Model <span class="m">1</span>: Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age
+Model <span class="m">2</span>: Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span> Store
+  Resid. Df Resid. Dev  Df Deviance
+<span class="m">1</span>       <span class="m">106</span>     <span class="m">378.43</span>             
+<span class="m">2</span>       <span class="m">104</span>     <span class="m">114.99</span>   <span class="m">2</span>   <span class="m">263.45</span>
+
+<span class="c1"># stepwise search</span>
+
+<span class="o">&gt;</span> step<span class="p">(</span>lumber.glm<span class="p">)</span>
+Start:  AIC<span class="o">=</span><span class="m">571.02</span>
+Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span> Store
+
+             Df Deviance    AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>            <span class="m">114.99</span> <span class="m">571.02</span>
+<span class="o">-</span> Age         <span class="m">1</span>   <span class="m">119.36</span> <span class="m">573.40</span>
+<span class="o">-</span> Housing     <span class="m">1</span>   <span class="m">133.19</span> <span class="m">587.23</span>
+<span class="o">-</span> Income      <span class="m">1</span>   <span class="m">146.78</span> <span class="m">600.82</span>
+<span class="o">-</span> Competitor  <span class="m">1</span>   <span class="m">156.65</span> <span class="m">610.68</span>
+<span class="o">-</span> Store       <span class="m">1</span>   <span class="m">182.49</span> <span class="m">636.52</span>
+
+Call:  glm<span class="p">(</span>formula <span class="o">=</span> Customers ~ Housing <span class="o">+</span> Income <span class="o">+</span> Age <span class="o">+</span> Competitor <span class="o">+</span>      Store<span class="p">,</span> family <span class="o">=</span> poisson<span class="p">(),</span> data <span class="o">=</span> lumber.table<span class="p">)</span> 
+
+Coefficients:
+<span class="p">(</span>Intercept<span class="p">)</span>      Housing       Income          Age   Competitor        Store  
+  <span class="m">2.942</span>e<span class="o">+</span><span class="m">00</span>    <span class="m">6.058</span>e<span class="o">-</span><span class="m">04</span>   <span class="m">-1.169</span>e<span class="o">-</span><span class="m">05</span>   <span class="m">-3.726</span>e<span class="o">-</span><span class="m">03</span>    <span class="m">1.684</span>e<span class="o">-</span><span class="m">01</span>   <span class="m">-1.288</span>e<span class="o">-</span><span class="m">01</span>  
+
+Degrees of Freedom: <span class="m">109</span> Total <span class="p">(</span>i.e. Null<span class="p">);</span>  <span class="m">104</span> Residual
+Null Deviance:	    <span class="m">422.2</span> 
+Residual Deviance: <span class="m">115</span> 	AIC: <span class="m">571</span> 
+</pre></div>
+</div>
+</div>
+<div class="section" id="marijuana-use">
+<h2>Marijuana use<a class="headerlink" href="#marijuana-use" title="Permalink to this headline">¶</a></h2>
+<p>This is a 3-way contingency table example that uses
+a Poisson model to test for independences
+between more than two categorical variables.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># alcohol use</span>
+<span class="o">&gt;</span> A <span class="o">=</span> factor<span class="p">(</span>c<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+
+<span class="c1"># cigarette use</span>
+<span class="o">&gt;</span> C <span class="o">=</span> factor<span class="p">(</span>c<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+
+<span class="c1"># marijuana use</span>
+<span class="o">&gt;</span> M <span class="o">=</span> factor<span class="p">(</span>c<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+
+<span class="o">&gt;</span> Y <span class="o">=</span> c<span class="p">(</span><span class="m">279</span><span class="p">,</span><span class="m">43</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">456</span><span class="p">,</span><span class="m">538</span><span class="p">,</span><span class="m">44</span><span class="p">,</span><span class="m">911</span><span class="p">)</span>
+
+<span class="c1"># independence</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>glm<span class="p">(</span>Y~M<span class="o">+</span>A<span class="o">+</span>C<span class="p">,</span>family<span class="o">=</span>poisson<span class="p">()))</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Y ~ M <span class="o">+</span> A <span class="o">+</span> C<span class="p">,</span> family <span class="o">=</span> poisson<span class="p">())</span>
+
+Deviance Residuals: 
+      <span class="m">1</span>        <span class="m">2</span>        <span class="m">3</span>        <span class="m">4</span>        <span class="m">5</span>        <span class="m">6</span>        <span class="m">7</span>        <span class="m">8</span>  
+ <span class="m">19.639</span>   <span class="m">-8.436</span>   <span class="m">-8.832</span>  <span class="m">-12.440</span>    <span class="m">3.426</span>   <span class="m">-7.817</span>  <span class="m">-17.683</span>   <span class="m">14.522</span>  
+
+Coefficients:
+            Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">4.17254</span>    <span class="m">0.06496</span>  <span class="m">64.234</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+M1          <span class="m">-0.31542</span>    <span class="m">0.04244</span>  <span class="m">-7.431</span> <span class="m">1.08</span>e<span class="o">-</span><span class="m">13</span> <span class="o">***</span>
+A1           <span class="m">1.78511</span>    <span class="m">0.05976</span>  <span class="m">29.872</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+C1           <span class="m">0.64931</span>    <span class="m">0.04415</span>  <span class="m">14.707</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for poisson family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">2851.5</span>  on <span class="m">7</span>  degrees of freedom
+Residual deviance: <span class="m">1286.0</span>  on <span class="m">4</span>  degrees of freedom
+AIC: <span class="m">1343.1</span>
+
+Number of Fisher Scoring iterations: <span class="m">6</span>
+
+
+<span class="c1"># this model has alcohol and tobacco conditionally</span>
+<span class="c1"># independent, given marijuana</span>
+
+<span class="o">&gt;</span> summary<span class="p">(</span>glm<span class="p">(</span>Y~M<span class="o">*</span><span class="p">(</span>A<span class="o">+</span>C<span class="p">),</span>family<span class="o">=</span>poisson<span class="p">()))</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Y ~ M <span class="o">*</span> <span class="p">(</span>A <span class="o">+</span> C<span class="p">),</span> family <span class="o">=</span> poisson<span class="p">())</span>
+
+Deviance Residuals: 
+       <span class="m">1</span>         <span class="m">2</span>         <span class="m">3</span>         <span class="m">4</span>         <span class="m">5</span>         <span class="m">6</span>         <span class="m">7</span>         <span class="m">8</span>  
+ <span class="m">6.83535</span>  <span class="m">-9.77162</span>   <span class="m">2.22872</span>  <span class="m">-0.86631</span>  <span class="m">-4.34413</span>   <span class="m">4.57017</span>  <span class="m">-0.26193</span>   <span class="m">0.05836</span>  
+
+Coefficients:
+            Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">5.19207</span>    <span class="m">0.06088</span>  <span class="m">85.285</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+M1          <span class="m">-6.62092</span>    <span class="m">0.47370</span> <span class="m">-13.977</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+A1           <span class="m">1.12719</span>    <span class="m">0.06412</span>  <span class="m">17.579</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+C1          <span class="m">-0.23512</span>    <span class="m">0.05551</span>  <span class="m">-4.235</span> <span class="m">2.28</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+M1:A1        <span class="m">4.12509</span>    <span class="m">0.45294</span>   <span class="m">9.107</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+M1:C1        <span class="m">3.22431</span>    <span class="m">0.16098</span>  <span class="m">20.029</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for poisson family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">2851.46</span>  on <span class="m">7</span>  degrees of freedom
+Residual deviance:  <span class="m">187.75</span>  on <span class="m">2</span>  degrees of freedom
+AIC: <span class="m">248.8</span>
+
+Number of Fisher Scoring iterations: <span class="m">5</span>
+</pre></div>
+</div>
+<p>We can also use <em>anova</em></p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> anova<span class="p">(</span>glm<span class="p">(</span>Y~A<span class="o">*</span>M<span class="o">*</span>C<span class="p">,</span> family<span class="o">=</span>poisson<span class="p">()))</span>
+Analysis of Deviance Table
+
+Model: poisson<span class="p">,</span> link: log
+
+Response: Y
+
+Terms added sequentially <span class="p">(</span>first to last<span class="p">)</span>
+
+
+      Df Deviance Resid. Df Resid. Dev
+<span class="kc">NULL</span>                      <span class="m">7</span>    <span class="m">2851.46</span>
+A      <span class="m">1</span>  <span class="m">1281.71</span>         <span class="m">6</span>    <span class="m">1569.75</span>
+M      <span class="m">1</span>    <span class="m">55.91</span>         <span class="m">5</span>    <span class="m">1513.83</span>
+C      <span class="m">1</span>   <span class="m">227.81</span>         <span class="m">4</span>    <span class="m">1286.02</span>
+A:M    <span class="m">1</span>   <span class="m">346.46</span>         <span class="m">3</span>     <span class="m">939.56</span>
+A:C    <span class="m">1</span>   <span class="m">442.19</span>         <span class="m">2</span>     <span class="m">497.37</span>
+M:C    <span class="m">1</span>   <span class="m">497.00</span>         <span class="m">1</span>       <span class="m">0.37</span>
+A:M:C  <span class="m">1</span>     <span class="m">0.37</span>         <span class="m">0</span> <span class="m">-2.058</span>e<span class="o">-</span><span class="m">13</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>glm<span class="p">(</span>Y~M<span class="o">*</span><span class="p">(</span>A<span class="o">+</span>C<span class="p">),</span> family<span class="o">=</span>poisson<span class="p">()),</span> glm<span class="p">(</span>Y~A<span class="o">*</span>M<span class="o">*</span>C<span class="p">,</span> family<span class="o">=</span>poisson<span class="p">()))</span>
+Analysis of Deviance Table
+
+Model <span class="m">1</span>: Y ~ M <span class="o">*</span> <span class="p">(</span>A <span class="o">+</span> C<span class="p">)</span>
+Model <span class="m">2</span>: Y ~ A <span class="o">*</span> M <span class="o">*</span> C
+  Resid. Df Resid. Dev Df Deviance
+<span class="m">1</span>         <span class="m">2</span>     <span class="m">187.75</span>            
+<span class="m">2</span>         <span class="m">0</span> <span class="m">-2.058</span>e<span class="o">-</span><span class="m">13</span>  <span class="m">2</span>   <span class="m">187.75</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>glm<span class="p">(</span>Y~A<span class="o">*</span>M<span class="o">*</span>C<span class="o">-</span>A:M:C<span class="p">,</span> family<span class="o">=</span>poisson<span class="p">()),</span> glm<span class="p">(</span>Y~A<span class="o">*</span>M<span class="o">*</span>C<span class="p">,</span> family<span class="o">=</span>poisson<span class="p">()))</span>
+Analysis of Deviance Table
+
+Model <span class="m">1</span>: Y ~ A <span class="o">*</span> M <span class="o">*</span> C <span class="o">-</span> A:M:C
+Model <span class="m">2</span>: Y ~ A <span class="o">*</span> M <span class="o">*</span> C
+  Resid. Df Resid. Dev Df Deviance
+<span class="m">1</span>         <span class="m">1</span>    <span class="m">0.37399</span>            
+<span class="m">2</span>         <span class="m">0</span> <span class="m">-2.058</span>e<span class="o">-</span><span class="m">13</span>  <span class="m">1</span>  <span class="m">0.37399</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="penalized.html" title="Penalized regression: ridge, LASSO"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="logistic.html" title="Logistic regression"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Model selection &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Logistic regression" href="logistic.html" />
+    <link rel="prev" title="Correlated errors" href="correlated_errors.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="logistic.html" title="Logistic regression"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="correlated_errors.html" title="Correlated errors"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Model selection</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#election-example-best-subset">Election example: best subset</a></li>
+<li><a class="reference external" href="#election-example-stepwise">Election example: stepwise</a></li>
+<li><a class="reference external" href="#bias-variance-tradeoff">Bias-variance tradeoff</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="correlated_errors.html"
+                                  title="previous chapter">Correlated errors</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="logistic.html"
+                                  title="next chapter">Logistic regression</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/selection.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="model-selection">
+<span id="selection"></span><h1>Model selection<a class="headerlink" href="#model-selection" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/selection.pdf">here</a>.</p>
+</div>
+<div class="section" id="election-example-best-subset">
+<h2>Election example: best subset<a class="headerlink" href="#election-example-best-subset" title="Permalink to this headline">¶</a></h2>
+<p>Here is the data for the election example discussed in the notes. We
+are going to use two different model selection strategies
+to choose a model. The first, <em>best subset</em>, tries to find
+the best model out of all possible model for a given criterion. In
+<em>R</em>, the criterion must be one of <img class="math" src="_images/math/c966d6549afb1c8dd47ab24a6f7d06a8c00453a7.png" alt="R^2, R^2_a, C_p"/>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/election.table&#39;</span>
+
+<span class="o">&gt;</span> election.table <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+<span class="o">&gt;</span> pairs<span class="p">(</span>election.table<span class="p">[,</span><span class="m">2</span>:ncol<span class="p">(</span>election.table<span class="p">)],</span> cex.labels<span class="o">=</span><span class="m">3</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span>       bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/61c4235f4e.png" src="_images/61c4235f4e.png" />
+<p>Using <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> doesn&#8217;t work because the full model (all the variables)
+always wins. The library that does this in <em>R</em> is called <em>leaps</em></p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># run install.packages(&#39;leaps&#39;) if needed</span>
+<span class="o">&gt;</span> library<span class="p">(</span>leaps<span class="p">)</span>
+
+
+<span class="c1"># Leaps takes a design matrix as argument: throw away the intercept</span>
+<span class="c1"># column or leaps will complain</span>
+
+<span class="o">&gt;</span> election.lm <span class="o">=</span> lm<span class="p">(</span>V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span>G:I <span class="o">+</span> P <span class="o">+</span> N<span class="p">,</span> election.table<span class="p">)</span>
+<span class="o">&gt;</span> X <span class="o">=</span> model.matrix<span class="p">(</span>election.lm<span class="p">)[,</span><span class="m">-1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We&#8217;ll plot the three best models for <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> for each model size of model.
+As we can see, it is monotone in the size of the model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.leaps <span class="o">=</span> leaps<span class="p">(</span>X<span class="p">,</span> election.table<span class="p">$</span>V<span class="p">,</span> nbest<span class="o">=</span><span class="m">3</span><span class="p">,</span> method<span class="o">=</span><span class="s">&#39;r2&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>election.leaps<span class="p">$</span>size<span class="p">,</span> election.leaps<span class="p">$</span>r2<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> best.model.r2 <span class="o">=</span> election.leaps<span class="p">$</span>which<span class="p">[</span>which<span class="p">((</span>election.leaps<span class="p">$</span>r2 <span class="o">==</span> max<span class="p">(</span>election.leaps<span class="p">$</span>r2<span class="p">))),]</span>
+<span class="o">&gt;</span> best.model.r2
+   <span class="m">1</span>    <span class="m">2</span>    <span class="m">3</span>    <span class="m">4</span>    <span class="m">5</span>    <span class="m">6</span> 
+<span class="kc">TRUE</span> <span class="kc">TRUE</span> <span class="kc">TRUE</span> <span class="kc">TRUE</span> <span class="kc">TRUE</span> <span class="kc">TRUE</span> 
+</pre></div>
+</div>
+<img alt="_images/fa2e6c61cb.png" src="_images/fa2e6c61cb.png" />
+<p>Using adjusted <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> is not monotone.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.leaps <span class="o">=</span> leaps<span class="p">(</span>X<span class="p">,</span> election.table<span class="p">$</span>V<span class="p">,</span> nbest<span class="o">=</span><span class="m">3</span><span class="p">,</span> method<span class="o">=</span><span class="s">&#39;adjr2&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>election.leaps<span class="p">$</span>size<span class="p">,</span> election.leaps<span class="p">$</span>adjr2<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> best.model.adjr2 <span class="o">=</span> election.leaps<span class="p">$</span>which<span class="p">[</span>which<span class="p">((</span>election.leaps<span class="p">$</span>adjr2 <span class="o">==</span> max<span class="p">(</span>election.leaps<span class="p">$</span>adjr2<span class="p">))),]</span>
+<span class="o">&gt;</span> best.model.adjr2
+    <span class="m">1</span>     <span class="m">2</span>     <span class="m">3</span>     <span class="m">4</span>     <span class="m">5</span>     <span class="m">6</span> 
+ <span class="kc">TRUE</span>  <span class="kc">TRUE</span> <span class="kc">FALSE</span> <span class="kc">FALSE</span>  <span class="kc">TRUE</span>  <span class="kc">TRUE</span> 
+</pre></div>
+</div>
+<img alt="_images/3cfd04f2cf.png" src="_images/3cfd04f2cf.png" />
+<p>Nor is Mallow&#8217;s <img class="math" src="_images/math/b48a13aec6691698508fc603e2bf0d44b996fdeb.png" alt="C_p"/></p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.leaps <span class="o">=</span> leaps<span class="p">(</span>X<span class="p">,</span> election.table<span class="p">$</span>V<span class="p">,</span> nbest<span class="o">=</span><span class="m">3</span><span class="p">,</span> method<span class="o">=</span><span class="s">&#39;Cp&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>election.leaps<span class="p">$</span>size<span class="p">,</span> election.leaps<span class="p">$</span>Cp<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> best.model.Cp <span class="o">=</span> election.leaps<span class="p">$</span>which<span class="p">[</span>which<span class="p">((</span>election.leaps<span class="p">$</span>Cp <span class="o">==</span> min<span class="p">(</span>election.leaps<span class="p">$</span>Cp<span class="p">))),]</span>
+<span class="o">&gt;</span> best.model.Cp
+    <span class="m">1</span>     <span class="m">2</span>     <span class="m">3</span>     <span class="m">4</span>     <span class="m">5</span>     <span class="m">6</span> 
+<span class="kc">FALSE</span>  <span class="kc">TRUE</span> <span class="kc">FALSE</span> <span class="kc">FALSE</span>  <span class="kc">TRUE</span>  <span class="kc">TRUE</span> 
+</pre></div>
+</div>
+<img alt="_images/b2d120be4a.png" src="_images/b2d120be4a.png" />
+</div>
+<div class="section" id="election-example-stepwise">
+<h2>Election example: stepwise<a class="headerlink" href="#election-example-stepwise" title="Permalink to this headline">¶</a></h2>
+<p>The next algorithm is an example of a stepwise model building procedure
+that tries to include or delete a variable at a time.</p>
+<p>The default direction argument is <em>both</em>, which tries to add or delete
+variables from an initial model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.step.both <span class="o">=</span> step<span class="p">(</span>election.lm<span class="p">,</span> direction<span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">)</span>
+Start:  AIC<span class="o">=</span><span class="m">-128.54</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> G:I <span class="o">+</span> P <span class="o">+</span> N
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">-</span> P     <span class="m">1</span> <span class="m">5.506</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-130.487</span>
+<span class="o">-</span> W     <span class="m">1</span> <span class="m">1.698</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.024</span> <span class="m">-130.386</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-128.536</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-127.927</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.036</span> <span class="m">-121.972</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.051</span>    <span class="m">0.074</span> <span class="m">-106.520</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-130.49</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> N <span class="o">+</span> I:G
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">-</span> W     <span class="m">1</span> <span class="m">1.196</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.024</span> <span class="m">-132.381</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-130.487</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-129.769</span>
+<span class="o">+</span> P     <span class="m">1</span> <span class="m">5.506</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-128.536</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.014</span>    <span class="m">0.038</span> <span class="m">-122.762</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.054</span>    <span class="m">0.077</span> <span class="m">-107.710</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-132.38</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> N <span class="o">+</span> I:G
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-132.381</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-131.740</span>
+<span class="o">+</span> W     <span class="m">1</span> <span class="m">1.196</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.024</span> <span class="m">-130.487</span>
+<span class="o">+</span> P     <span class="m">1</span> <span class="m">4.876</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.024</span> <span class="m">-130.386</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.014</span>    <span class="m">0.038</span> <span class="m">-124.760</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.059</span>    <span class="m">0.083</span> <span class="m">-108.123</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>election.step.both<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> V ~ I <span class="o">+</span> D <span class="o">+</span> N <span class="o">+</span> I:G<span class="p">,</span> data <span class="o">=</span> election.table<span class="p">)</span>
+
+Residuals:
+      Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max 
+<span class="m">-0.043509</span> <span class="m">-0.019208</span> <span class="m">-0.004912</span>  <span class="m">0.009626</span>  <span class="m">0.090627</span> 
+
+Coefficients:
+             Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">0.506530</span>   <span class="m">0.020689</span>  <span class="m">24.483</span> <span class="m">4.15</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+I           <span class="m">-0.019417</span>   <span class="m">0.014701</span>  <span class="m">-1.321</span>  <span class="m">0.20515</span>    
+D            <span class="m">0.055436</span>   <span class="m">0.018180</span>   <span class="m">3.049</span>  <span class="m">0.00765</span> <span class="o">**</span> 
+N           <span class="m">-0.004653</span>   <span class="m">0.003177</span>  <span class="m">-1.465</span>  <span class="m">0.16241</span>    
+I:G          <span class="m">0.009588</span>   <span class="m">0.001519</span>   <span class="m">6.314</span> <span class="m">1.03</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">0.03862</span> on <span class="m">16</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.7883</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.7353</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">14.89</span> on <span class="m">4</span> and <span class="m">16</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">2.95</span>e<span class="o">-</span><span class="m">05</span> 
+</pre></div>
+</div>
+<p>An alternative is <em>backward</em> which only tries to delete variables.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.step.backward <span class="o">=</span> step<span class="p">(</span>election.lm<span class="p">,</span> direction<span class="o">=</span><span class="s">&#39;backward&#39;</span><span class="p">)</span>
+Start:  AIC<span class="o">=</span><span class="m">-128.54</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> G:I <span class="o">+</span> P <span class="o">+</span> N
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">-</span> P     <span class="m">1</span> <span class="m">5.506</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-130.487</span>
+<span class="o">-</span> W     <span class="m">1</span> <span class="m">1.698</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.024</span> <span class="m">-130.386</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-128.536</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-127.927</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.036</span> <span class="m">-121.972</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.051</span>    <span class="m">0.074</span> <span class="m">-106.520</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-130.49</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> N <span class="o">+</span> I:G
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">-</span> W     <span class="m">1</span> <span class="m">0.0001196</span>    <span class="m">0.024</span> <span class="m">-132.381</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-130.487</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-129.769</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.014</span>    <span class="m">0.038</span> <span class="m">-122.762</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.054</span>    <span class="m">0.077</span> <span class="m">-107.710</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-132.38</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> N <span class="o">+</span> I:G
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-132.381</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-131.740</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.014</span>    <span class="m">0.038</span> <span class="m">-124.760</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.059</span>    <span class="m">0.083</span> <span class="m">-108.123</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>election.step.backward<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> V ~ I <span class="o">+</span> D <span class="o">+</span> N <span class="o">+</span> I:G<span class="p">,</span> data <span class="o">=</span> election.table<span class="p">)</span>
+
+Residuals:
+      Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max 
+<span class="m">-0.043509</span> <span class="m">-0.019208</span> <span class="m">-0.004912</span>  <span class="m">0.009626</span>  <span class="m">0.090627</span> 
+
+Coefficients:
+             Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">0.506530</span>   <span class="m">0.020689</span>  <span class="m">24.483</span> <span class="m">4.15</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+I           <span class="m">-0.019417</span>   <span class="m">0.014701</span>  <span class="m">-1.321</span>  <span class="m">0.20515</span>    
+D            <span class="m">0.055436</span>   <span class="m">0.018180</span>   <span class="m">3.049</span>  <span class="m">0.00765</span> <span class="o">**</span> 
+N           <span class="m">-0.004653</span>   <span class="m">0.003177</span>  <span class="m">-1.465</span>  <span class="m">0.16241</span>    
+I:G          <span class="m">0.009588</span>   <span class="m">0.001519</span>   <span class="m">6.314</span> <span class="m">1.03</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">0.03862</span> on <span class="m">16</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.7883</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.7353</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">14.89</span> on <span class="m">4</span> and <span class="m">16</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">2.95</span>e<span class="o">-</span><span class="m">05</span> 
+</pre></div>
+</div>
+<p>Or <em>forward</em>, which only tries to add variables to the model. For the forward direction, we must provide <em>step</em> with a largest possible model. This is what
+the second argument is here. We can also specify a <em>lower</em> argument as well.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.step.forward <span class="o">=</span> step<span class="p">(</span>lm<span class="p">(</span>V ~ <span class="m">1</span><span class="p">,</span> election.table<span class="p">),</span> list<span class="p">(</span>upper <span class="o">=</span> ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span>G:I <span class="o">+</span> P <span class="o">+</span> N<span class="p">),</span> direction<span class="o">=</span><span class="s">&#39;forward&#39;</span><span class="p">)</span>
+Start:  AIC<span class="o">=</span><span class="m">-107.78</span>
+V ~ <span class="m">1</span>
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">+</span> D     <span class="m">1</span>     <span class="m">0.028</span>    <span class="m">0.085</span> <span class="m">-111.797</span>
+<span class="o">+</span> I     <span class="m">1</span>     <span class="m">0.014</span>    <span class="m">0.099</span> <span class="m">-108.465</span>
+<span class="o">+</span> P     <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.100</span> <span class="m">-108.237</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.113</span> <span class="m">-107.779</span>
+<span class="o">+</span> N     <span class="m">1</span>     <span class="m">0.002</span>    <span class="m">0.110</span> <span class="m">-106.236</span>
+<span class="o">+</span> W     <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.112</span> <span class="m">-105.957</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-111.8</span>
+V ~ D
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">+</span> P     <span class="m">1</span>     <span class="m">0.010</span>    <span class="m">0.075</span> <span class="m">-112.417</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.085</span> <span class="m">-111.797</span>
+<span class="o">+</span> W     <span class="m">1</span>     <span class="m">0.007</span>    <span class="m">0.078</span> <span class="m">-111.560</span>
+<span class="o">+</span> I     <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.083</span> <span class="m">-110.119</span>
+<span class="o">+</span> N     <span class="m">1</span> <span class="m">3.261</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.085</span> <span class="m">-109.798</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-112.42</span>
+V ~ D <span class="o">+</span> P
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.075</span> <span class="m">-112.417</span>
+<span class="o">+</span> W     <span class="m">1</span> <span class="m">3.194</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.074</span> <span class="m">-110.507</span>
+<span class="o">+</span> N     <span class="m">1</span> <span class="m">1.850</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.075</span> <span class="m">-110.469</span>
+<span class="o">+</span> I     <span class="m">1</span> <span class="m">2.633</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.075</span> <span class="m">-110.424</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>election.step.forward<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> V ~ D <span class="o">+</span> P<span class="p">,</span> data <span class="o">=</span> election.table<span class="p">)</span>
+
+Residuals:
+      Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max 
+<span class="m">-0.101121</span> <span class="m">-0.036838</span> <span class="m">-0.006987</span>  <span class="m">0.019029</span>  <span class="m">0.163250</span> 
+
+Coefficients:
+             Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">0.514022</span>   <span class="m">0.022793</span>  <span class="m">22.552</span>  <span class="m">1.2</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+D            <span class="m">0.043134</span>   <span class="m">0.017381</span>   <span class="m">2.482</span>   <span class="m">0.0232</span> <span class="o">*</span>  
+P           <span class="m">-0.006017</span>   <span class="m">0.003891</span>  <span class="m">-1.546</span>   <span class="m">0.1394</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">0.06442</span> on <span class="m">18</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.3372</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.2636</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">4.579</span> on <span class="m">2</span> and <span class="m">18</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.02468</span> 
+</pre></div>
+</div>
+<p>Stepwise search also allows interactions. This next call
+searches for all 2-way interaction, only including those 2-way
+interactions whose main effects are in the model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.step.interactions <span class="o">=</span> step<span class="p">(</span>election.lm<span class="p">,</span> list<span class="p">(</span>upper <span class="o">=</span> ~ <span class="m">.</span><span class="o">^</span><span class="m">2</span><span class="p">),</span> direction<span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">)</span>
+Start:  AIC<span class="o">=</span><span class="m">-128.54</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> G:I <span class="o">+</span> P <span class="o">+</span> N
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">+</span> I:N   <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.011</span> <span class="m">-142.959</span>
+<span class="o">+</span> D:N   <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.012</span> <span class="m">-140.906</span>
+<span class="o">+</span> I:P   <span class="m">1</span>     <span class="m">0.005</span>    <span class="m">0.019</span> <span class="m">-131.321</span>
+<span class="o">-</span> P     <span class="m">1</span> <span class="m">5.506</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-130.487</span>
+<span class="o">-</span> W     <span class="m">1</span> <span class="m">1.698</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.024</span> <span class="m">-130.386</span>
+<span class="o">+</span> D:P   <span class="m">1</span>     <span class="m">0.004</span>    <span class="m">0.020</span> <span class="m">-130.199</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-128.536</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-127.927</span>
+<span class="o">+</span> P:N   <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.022</span> <span class="m">-127.726</span>
+<span class="o">+</span> W:N   <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.023</span> <span class="m">-127.069</span>
+<span class="o">+</span> I:D   <span class="m">1</span> <span class="m">2.623</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.023</span> <span class="m">-126.770</span>
+<span class="o">+</span> D:W   <span class="m">1</span> <span class="m">9.847</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-126.623</span>
+<span class="o">+</span> W:P   <span class="m">1</span> <span class="m">1.896</span>e<span class="o">-</span><span class="m">07</span>    <span class="m">0.024</span> <span class="m">-126.536</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.036</span> <span class="m">-121.972</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.051</span>    <span class="m">0.074</span> <span class="m">-106.520</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-142.96</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N
+
+        Df Sum of Sq      RSS      AIC
+<span class="o">+</span> D:P    <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.008</span> <span class="m">-146.668</span>
+<span class="o">-</span> P      <span class="m">1</span> <span class="m">3.605</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-144.272</span>
+<span class="o">+</span> I:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.009</span> <span class="m">-144.052</span>
+<span class="o">-</span> W      <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.011</span> <span class="m">-143.981</span>
+<span class="o">+</span> W:N    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.010</span> <span class="m">-143.593</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">0.011</span> <span class="m">-142.959</span>
+<span class="o">+</span> W:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.010</span> <span class="m">-142.024</span>
+<span class="o">+</span> P:N    <span class="m">1</span> <span class="m">4.369</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.010</span> <span class="m">-141.823</span>
+<span class="o">+</span> I:N:G  <span class="m">1</span> <span class="m">2.393</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-141.428</span>
+<span class="o">+</span> D:W    <span class="m">1</span> <span class="m">1.993</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-141.349</span>
+<span class="o">+</span> I:D    <span class="m">1</span> <span class="m">1.493</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-141.251</span>
+<span class="o">+</span> D:N    <span class="m">1</span> <span class="m">8.165</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.011</span> <span class="m">-141.118</span>
+<span class="o">-</span> I:N    <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.024</span> <span class="m">-128.536</span>
+<span class="o">-</span> D      <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.024</span> <span class="m">-128.359</span>
+<span class="o">-</span> I:G    <span class="m">1</span>     <span class="m">0.040</span>    <span class="m">0.051</span> <span class="m">-112.503</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-146.67</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N <span class="o">+</span> D:P
+
+        Df Sum of Sq      RSS      AIC
+<span class="o">-</span> W      <span class="m">1</span> <span class="m">2.867</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-148.661</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">0.008</span> <span class="m">-146.668</span>
+<span class="o">+</span> W:N    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-146.389</span>
+<span class="o">+</span> I:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-146.322</span>
+<span class="o">+</span> D:W    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-145.985</span>
+<span class="o">+</span> D:N    <span class="m">1</span> <span class="m">4.439</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-145.829</span>
+<span class="o">+</span> I:N:G  <span class="m">1</span> <span class="m">4.323</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-145.798</span>
+<span class="o">+</span> I:D    <span class="m">1</span> <span class="m">2.380</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-145.283</span>
+<span class="o">+</span> W:P    <span class="m">1</span> <span class="m">7.341</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.008</span> <span class="m">-144.856</span>
+<span class="o">+</span> P:N    <span class="m">1</span> <span class="m">2.592</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-144.675</span>
+<span class="o">-</span> D:P    <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.011</span> <span class="m">-142.959</span>
+<span class="o">-</span> I:N    <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.020</span> <span class="m">-130.199</span>
+<span class="o">-</span> I:G    <span class="m">1</span>     <span class="m">0.035</span>    <span class="m">0.043</span> <span class="m">-113.986</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-148.66</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N <span class="o">+</span> D:P
+
+        Df Sum of Sq      RSS      AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">0.008</span> <span class="m">-148.661</span>
+<span class="o">+</span> I:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-148.076</span>
+<span class="o">+</span> I:N:G  <span class="m">1</span> <span class="m">4.258</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-147.773</span>
+<span class="o">+</span> D:N    <span class="m">1</span> <span class="m">4.019</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-147.709</span>
+<span class="o">+</span> I:D    <span class="m">1</span> <span class="m">2.370</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-147.272</span>
+<span class="o">+</span> P:N    <span class="m">1</span> <span class="m">3.889</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-146.671</span>
+<span class="o">+</span> W      <span class="m">1</span> <span class="m">2.867</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-146.668</span>
+<span class="o">-</span> D:P    <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.011</span> <span class="m">-143.981</span>
+<span class="o">-</span> I:N    <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.021</span> <span class="m">-130.949</span>
+<span class="o">-</span> I:G    <span class="m">1</span>     <span class="m">0.035</span>    <span class="m">0.043</span> <span class="m">-115.859</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>election.step.interactions<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> V ~ I <span class="o">+</span> D <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N <span class="o">+</span> D:P<span class="p">,</span> data <span class="o">=</span> election.table<span class="p">)</span>
+
+Residuals:
+      Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max 
+<span class="m">-0.035023</span> <span class="m">-0.014044</span> <span class="m">-0.007658</span>  <span class="m">0.011799</span>  <span class="m">0.039904</span> 
+
+Coefficients:
+             Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">0.512410</span>   <span class="m">0.016885</span>  <span class="m">30.347</span> <span class="m">1.87</span>e<span class="o">-</span><span class="m">13</span> <span class="o">***</span>
+I           <span class="m">-0.076900</span>   <span class="m">0.016106</span>  <span class="m">-4.775</span> <span class="m">0.000363</span> <span class="o">***</span>
+D            <span class="m">0.087976</span>   <span class="m">0.019377</span>   <span class="m">4.540</span> <span class="m">0.000555</span> <span class="o">***</span>
+P            <span class="m">0.001382</span>   <span class="m">0.001841</span>   <span class="m">0.751</span> <span class="m">0.466138</span>    
+N           <span class="m">-0.007960</span>   <span class="m">0.002191</span>  <span class="m">-3.634</span> <span class="m">0.003030</span> <span class="o">**</span> 
+I:G          <span class="m">0.008336</span>   <span class="m">0.001122</span>   <span class="m">7.429</span> <span class="m">4.98</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+I:N          <span class="m">0.009705</span>   <span class="m">0.002157</span>   <span class="m">4.498</span> <span class="m">0.000599</span> <span class="o">***</span>
+D:P         <span class="m">-0.006755</span>   <span class="m">0.003061</span>  <span class="m">-2.207</span> <span class="m">0.045937</span> <span class="o">*</span>  
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">0.0252</span> on <span class="m">13</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9267</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.8873</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">23.48</span> on <span class="m">7</span> and <span class="m">13</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">2.077</span>e<span class="o">-</span><span class="m">06</span> 
+</pre></div>
+</div>
+<p>To run BIC instead of AIC, we add an extra argument <em>k</em>, which is
+the multiplier of the number of parameters. Hence, it is 2 for AIC
+and <em>log(n)</em> for BIC.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> election.step.interactions <span class="o">=</span> step<span class="p">(</span>election.lm<span class="p">,</span> list<span class="p">(</span>upper <span class="o">=</span> ~ <span class="m">.</span><span class="o">^</span><span class="m">2</span><span class="p">),</span> direction<span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">,</span> k<span class="o">=</span>log<span class="p">(</span><span class="m">21</span><span class="p">))</span>
+Start:  AIC<span class="o">=</span><span class="m">-121.22</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> G:I <span class="o">+</span> P <span class="o">+</span> N
+
+       Df Sum of Sq      RSS      AIC
+<span class="o">+</span> I:N   <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.011</span> <span class="m">-134.603</span>
+<span class="o">+</span> D:N   <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.012</span> <span class="m">-132.550</span>
+<span class="o">-</span> P     <span class="m">1</span> <span class="m">5.506</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-124.220</span>
+<span class="o">-</span> W     <span class="m">1</span> <span class="m">1.698</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.024</span> <span class="m">-124.119</span>
+<span class="o">+</span> I:P   <span class="m">1</span>     <span class="m">0.005</span>    <span class="m">0.019</span> <span class="m">-122.965</span>
+<span class="o">+</span> D:P   <span class="m">1</span>     <span class="m">0.004</span>    <span class="m">0.020</span> <span class="m">-121.843</span>
+<span class="o">-</span> N     <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.027</span> <span class="m">-121.660</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                 <span class="m">0.024</span> <span class="m">-121.224</span>
+<span class="o">+</span> P:N   <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.022</span> <span class="m">-119.370</span>
+<span class="o">+</span> W:N   <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.023</span> <span class="m">-118.713</span>
+<span class="o">+</span> I:D   <span class="m">1</span> <span class="m">2.623</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.023</span> <span class="m">-118.413</span>
+<span class="o">+</span> D:W   <span class="m">1</span> <span class="m">9.847</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.024</span> <span class="m">-118.267</span>
+<span class="o">+</span> W:P   <span class="m">1</span> <span class="m">1.896</span>e<span class="o">-</span><span class="m">07</span>    <span class="m">0.024</span> <span class="m">-118.180</span>
+<span class="o">-</span> D     <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.036</span> <span class="m">-115.704</span>
+<span class="o">-</span> I:G   <span class="m">1</span>     <span class="m">0.051</span>    <span class="m">0.074</span> <span class="m">-100.253</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-134.6</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N
+
+        Df Sum of Sq      RSS      AIC
+<span class="o">+</span> D:P    <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.008</span> <span class="m">-137.268</span>
+<span class="o">-</span> P      <span class="m">1</span> <span class="m">3.605</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-136.960</span>
+<span class="o">-</span> W      <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.011</span> <span class="m">-136.669</span>
+<span class="o">+</span> I:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.009</span> <span class="m">-134.651</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">0.011</span> <span class="m">-134.603</span>
+<span class="o">+</span> W:N    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.010</span> <span class="m">-134.192</span>
+<span class="o">+</span> W:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.010</span> <span class="m">-132.623</span>
+<span class="o">+</span> P:N    <span class="m">1</span> <span class="m">4.369</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.010</span> <span class="m">-132.423</span>
+<span class="o">+</span> I:N:G  <span class="m">1</span> <span class="m">2.393</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-132.027</span>
+<span class="o">+</span> D:W    <span class="m">1</span> <span class="m">1.993</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-131.948</span>
+<span class="o">+</span> I:D    <span class="m">1</span> <span class="m">1.493</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.011</span> <span class="m">-131.850</span>
+<span class="o">+</span> D:N    <span class="m">1</span> <span class="m">8.165</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.011</span> <span class="m">-131.717</span>
+<span class="o">-</span> I:N    <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.024</span> <span class="m">-121.224</span>
+<span class="o">-</span> D      <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.024</span> <span class="m">-121.047</span>
+<span class="o">-</span> I:G    <span class="m">1</span>     <span class="m">0.040</span>    <span class="m">0.051</span> <span class="m">-105.192</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-137.27</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> W <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N <span class="o">+</span> D:P
+
+        Df Sum of Sq      RSS      AIC
+<span class="o">-</span> W      <span class="m">1</span> <span class="m">2.867</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-140.305</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">0.008</span> <span class="m">-137.268</span>
+<span class="o">+</span> W:N    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-135.944</span>
+<span class="o">+</span> I:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-135.877</span>
+<span class="o">+</span> D:W    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-135.539</span>
+<span class="o">+</span> D:N    <span class="m">1</span> <span class="m">4.439</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-135.384</span>
+<span class="o">+</span> I:N:G  <span class="m">1</span> <span class="m">4.323</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-135.353</span>
+<span class="o">+</span> I:D    <span class="m">1</span> <span class="m">2.380</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-134.837</span>
+<span class="o">-</span> D:P    <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.011</span> <span class="m">-134.603</span>
+<span class="o">+</span> W:P    <span class="m">1</span> <span class="m">7.341</span>e<span class="o">-</span><span class="m">05</span>    <span class="m">0.008</span> <span class="m">-134.411</span>
+<span class="o">+</span> P:N    <span class="m">1</span> <span class="m">2.592</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-134.230</span>
+<span class="o">-</span> I:N    <span class="m">1</span>     <span class="m">0.012</span>    <span class="m">0.020</span> <span class="m">-121.843</span>
+<span class="o">-</span> I:G    <span class="m">1</span>     <span class="m">0.035</span>    <span class="m">0.043</span> <span class="m">-105.630</span>
+
+Step:  AIC<span class="o">=</span><span class="m">-140.3</span>
+V ~ I <span class="o">+</span> D <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N <span class="o">+</span> D:P
+
+        Df Sum of Sq      RSS      AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">0.008</span> <span class="m">-140.305</span>
+<span class="o">+</span> I:P    <span class="m">1</span>     <span class="m">0.001</span>    <span class="m">0.008</span> <span class="m">-138.675</span>
+<span class="o">+</span> I:N:G  <span class="m">1</span> <span class="m">4.258</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-138.372</span>
+<span class="o">+</span> D:N    <span class="m">1</span> <span class="m">4.019</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-138.308</span>
+<span class="o">+</span> I:D    <span class="m">1</span> <span class="m">2.370</span>e<span class="o">-</span><span class="m">04</span>    <span class="m">0.008</span> <span class="m">-137.872</span>
+<span class="o">+</span> P:N    <span class="m">1</span> <span class="m">3.889</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-137.270</span>
+<span class="o">+</span> W      <span class="m">1</span> <span class="m">2.867</span>e<span class="o">-</span><span class="m">06</span>    <span class="m">0.008</span> <span class="m">-137.268</span>
+<span class="o">-</span> D:P    <span class="m">1</span>     <span class="m">0.003</span>    <span class="m">0.011</span> <span class="m">-136.669</span>
+<span class="o">-</span> I:N    <span class="m">1</span>     <span class="m">0.013</span>    <span class="m">0.021</span> <span class="m">-123.638</span>
+<span class="o">-</span> I:G    <span class="m">1</span>     <span class="m">0.035</span>    <span class="m">0.043</span> <span class="m">-108.547</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>election.step.interactions<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> V ~ I <span class="o">+</span> D <span class="o">+</span> P <span class="o">+</span> N <span class="o">+</span> I:G <span class="o">+</span> I:N <span class="o">+</span> D:P<span class="p">,</span> data <span class="o">=</span> election.table<span class="p">)</span>
+
+Residuals:
+      Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max 
+<span class="m">-0.035023</span> <span class="m">-0.014044</span> <span class="m">-0.007658</span>  <span class="m">0.011799</span>  <span class="m">0.039904</span> 
+
+Coefficients:
+             Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">0.512410</span>   <span class="m">0.016885</span>  <span class="m">30.347</span> <span class="m">1.87</span>e<span class="o">-</span><span class="m">13</span> <span class="o">***</span>
+I           <span class="m">-0.076900</span>   <span class="m">0.016106</span>  <span class="m">-4.775</span> <span class="m">0.000363</span> <span class="o">***</span>
+D            <span class="m">0.087976</span>   <span class="m">0.019377</span>   <span class="m">4.540</span> <span class="m">0.000555</span> <span class="o">***</span>
+P            <span class="m">0.001382</span>   <span class="m">0.001841</span>   <span class="m">0.751</span> <span class="m">0.466138</span>    
+N           <span class="m">-0.007960</span>   <span class="m">0.002191</span>  <span class="m">-3.634</span> <span class="m">0.003030</span> <span class="o">**</span> 
+I:G          <span class="m">0.008336</span>   <span class="m">0.001122</span>   <span class="m">7.429</span> <span class="m">4.98</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+I:N          <span class="m">0.009705</span>   <span class="m">0.002157</span>   <span class="m">4.498</span> <span class="m">0.000599</span> <span class="o">***</span>
+D:P         <span class="m">-0.006755</span>   <span class="m">0.003061</span>  <span class="m">-2.207</span> <span class="m">0.045937</span> <span class="o">*</span>  
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">0.0252</span> on <span class="m">13</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9267</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.8873</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">23.48</span> on <span class="m">7</span> and <span class="m">13</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">2.077</span>e<span class="o">-</span><span class="m">06</span> 
+</pre></div>
+</div>
+<p>Let&#8217;s also confirm our formula for AIC of a multiple linear regression model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> sigma2.mle <span class="o">=</span> sum<span class="p">(</span>resid<span class="p">(</span>election.lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> <span class="m">21</span>
+<span class="o">&gt;</span> <span class="m">21</span><span class="o">*</span>log<span class="p">(</span><span class="m">2</span><span class="o">*</span>pi<span class="o">*</span>sigma2.mle<span class="p">)</span> <span class="o">+</span> <span class="m">21</span> <span class="o">+</span> <span class="m">2</span> <span class="o">*</span> <span class="m">8</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">-66.94026</span>
+<span class="o">&gt;</span> AIC<span class="p">(</span>election.lm<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">-66.94026</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="bias-variance-tradeoff">
+<h2>Bias-variance tradeoff<a class="headerlink" href="#bias-variance-tradeoff" title="Permalink to this headline">¶</a></h2>
+<p>We have spent a lot of time working with <em>unbiased</em> estimators of
+parameters. But often it is easy to find a <em>biased</em> estimator
+that behaves better in terms of (expected) mean squared error.</p>
+<p>This example illustrates the bias-variance tradeoff using a simple
+one sample problem and a shrunken estimator of the mean.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> nsample <span class="o">=</span> <span class="m">100</span>
+<span class="o">&gt;</span> ntrial <span class="o">=</span> <span class="m">50</span>
+<span class="o">&gt;</span> mu <span class="o">=</span> <span class="m">5</span> <span class="o">*</span> c<span class="p">(</span><span class="m">1</span>:nsample<span class="p">)</span> <span class="o">/</span> nsample
+<span class="o">&gt;</span> mu <span class="o">=</span> mu <span class="o">-</span> mean<span class="p">(</span>mu<span class="p">)</span>
+
+<span class="o">&gt;</span> get.sample <span class="o">=</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>rnorm<span class="p">(</span>nsample<span class="p">)</span> <span class="o">+</span> mu<span class="p">)</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> MSE <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>mu.hat<span class="p">,</span> mu<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>sum<span class="p">((</span>mu.hat <span class="o">-</span> mu<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> length<span class="p">(</span>mu<span class="p">))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> alpha <span class="o">=</span> seq<span class="p">(</span><span class="m">0.0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span>length<span class="o">=</span><span class="m">20</span><span class="p">)</span>
+
+<span class="o">&gt;</span> mse <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>alpha<span class="p">))</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:ntrial<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   Z <span class="o">=</span> get.sample<span class="p">()</span>
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">1</span>:length<span class="p">(</span>alpha<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>     mse<span class="p">[</span>j<span class="p">]</span> <span class="o">=</span> mse<span class="p">[</span>j<span class="p">]</span> <span class="o">+</span> MSE<span class="p">(</span>alpha<span class="p">[</span>j<span class="p">]</span> <span class="o">*</span> Z<span class="p">,</span> mu<span class="p">)</span> <span class="o">/</span> ntrial
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>alpha<span class="p">,</span> mse<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> ylim<span class="o">=</span>c<span class="p">(</span><span class="m">0</span><span class="p">,</span> max<span class="p">(</span>mse<span class="p">)),</span>
+<span class="o">+</span>      xlab<span class="o">=</span><span class="s">&#39;Shrinkage parameter, alpha&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;MSE(alpha)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/6f7df230c4.png" src="_images/6f7df230c4.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="logistic.html" title="Logistic regression"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="correlated_errors.html" title="Correlated errors"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

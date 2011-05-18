@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Penalized regression: ridge, LASSO &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="prev" title="Poisson regression" href="poisson.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="poisson.html" title="Poisson regression"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Penalized regression: ridge, LASSO</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#bias-variance-tradeoff">Bias-variance tradeoff</a></li>
+<li><a class="reference external" href="#cross-validation">Cross-validation</a></li>
+<li><a class="reference external" href="#ridge-regression">Ridge regression</a></li>
+<li><a class="reference external" href="#lasso">LASSO</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="poisson.html"
+                                  title="previous chapter">Poisson regression</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/penalized.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="penalized-regression-ridge-lasso">
+<span id="penalized"></span><h1>Penalized regression: ridge, LASSO<a class="headerlink" href="#penalized-regression-ridge-lasso" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/penalized.pdf">here</a>.</p>
+</div>
+<div class="section" id="bias-variance-tradeoff">
+<h2>Bias-variance tradeoff<a class="headerlink" href="#bias-variance-tradeoff" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> nsample <span class="o">=</span> <span class="m">10</span>
+<span class="o">&gt;</span> ntrial <span class="o">=</span> <span class="m">100</span>
+<span class="o">&gt;</span> mu <span class="o">=</span> <span class="m">0.5</span>
+
+
+<span class="o">&gt;</span> MSE <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>mu.hat<span class="p">,</span> mu<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>sum<span class="p">((</span>mu.hat <span class="o">-</span> mu<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> alpha <span class="o">=</span> seq<span class="p">(</span><span class="m">0.0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span>length<span class="o">=</span><span class="m">20</span><span class="p">)</span>
+
+<span class="o">&gt;</span> mse <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>alpha<span class="p">))</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:ntrial<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   Z <span class="o">=</span> rnorm<span class="p">(</span>nsample<span class="p">)</span> <span class="o">+</span> mu
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">1</span>:length<span class="p">(</span>alpha<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>     mse<span class="p">[</span>j<span class="p">]</span> <span class="o">=</span> mse<span class="p">[</span>j<span class="p">]</span> <span class="o">+</span> MSE<span class="p">(</span>alpha<span class="p">[</span>j<span class="p">]</span> <span class="o">*</span> mean<span class="p">(</span>Z<span class="p">),</span> mu<span class="p">)</span> <span class="o">/</span> ntrial
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>alpha<span class="p">,</span> mse<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> ylim<span class="o">=</span>c<span class="p">(</span><span class="m">0</span><span class="p">,</span> max<span class="p">(</span>mse<span class="p">)),</span>
+<span class="o">+</span>      xlab<span class="o">=</span><span class="s">&#39;Shrinkage parameter, alpha&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;MSE(alpha)&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>mu<span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="p">(</span>mu<span class="o">^</span><span class="m">2</span><span class="o">+</span><span class="m">1</span><span class="o">/</span>nsample<span class="p">),</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/1223a30eb4.png" src="_images/1223a30eb4.png" />
+</div>
+<div class="section" id="cross-validation">
+<h2>Cross-validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h2>
+<p>This example tries to demonstrate that using cross-validation
+gets close to the theoretically optimal value of shrinkage.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> ntrial <span class="o">=</span> <span class="m">500</span>
+<span class="o">&gt;</span> mu <span class="o">=</span> <span class="m">0.08</span>
+<span class="o">&gt;</span> nsample <span class="o">=</span> <span class="m">200</span>
+
+<span class="o">&gt;</span> MSE <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>mu.hat<span class="p">,</span> mu<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>sum<span class="p">((</span>mu.hat <span class="o">-</span> mu<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+
+<span class="c1"># K fold cross-validation</span>
+
+<span class="o">&gt;</span> K <span class="o">=</span> <span class="m">10</span>
+<span class="o">&gt;</span> CV <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>Z<span class="p">,</span> alpha<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>    cve <span class="o">=</span> numeric<span class="p">(</span>K<span class="p">)</span>
+<span class="o">+</span>    l <span class="o">=</span> length<span class="p">(</span>Z<span class="p">)</span>
+<span class="o">+</span>    <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:K<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>        g <span class="o">=</span> c<span class="p">((</span>i<span class="o">-</span><span class="m">1</span><span class="p">)</span><span class="o">*</span>l<span class="o">/</span>K<span class="o">+</span><span class="m">1</span><span class="p">,</span>i<span class="o">*</span>l<span class="o">/</span>K<span class="p">)</span>
+<span class="o">+</span>        mu.hat <span class="o">=</span> mean<span class="p">(</span>Z<span class="p">[</span><span class="o">-</span>g<span class="p">])</span> <span class="o">*</span> alpha
+<span class="o">+</span>        cve<span class="p">[</span>i<span class="p">]</span> <span class="o">=</span> sum<span class="p">((</span>Z<span class="p">[</span>g<span class="p">]</span><span class="o">-</span>mu.hat<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<span class="o">+</span>    <span class="p">}</span>
+<span class="o">+</span>    <span class="kr">return</span><span class="p">(</span>c<span class="p">(</span>mean<span class="p">(</span>cve<span class="p">),</span> sd<span class="p">(</span>cve<span class="p">)))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> alpha <span class="o">=</span> seq<span class="p">(</span><span class="m">0.0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span>length<span class="o">=</span><span class="m">20</span><span class="p">)</span>
+
+<span class="o">&gt;</span> mse <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>alpha<span class="p">))</span>
+<span class="o">&gt;</span> cv <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>alpha<span class="p">))</span>
+<span class="o">&gt;</span> cv.sd <span class="o">=</span> numeric<span class="p">(</span>length<span class="p">(</span>alpha<span class="p">))</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:ntrial<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   Z <span class="o">=</span> rnorm<span class="p">(</span>nsample<span class="p">)</span> <span class="o">+</span> mu
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">1</span>:length<span class="p">(</span>alpha<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>     mse<span class="p">[</span>j<span class="p">]</span> <span class="o">=</span> mse<span class="p">[</span>j<span class="p">]</span> <span class="o">+</span> MSE<span class="p">(</span>alpha<span class="p">[</span>j<span class="p">]</span> <span class="o">*</span> mean<span class="p">(</span>Z<span class="p">),</span> mu<span class="p">)</span> <span class="o">/</span> ntrial
+<span class="o">+</span>     d <span class="o">=</span> CV<span class="p">(</span>Z<span class="p">,</span> alpha<span class="p">[</span>j<span class="p">])</span>
+<span class="o">+</span>     cv<span class="p">[</span>j<span class="p">]</span> <span class="o">=</span> cv<span class="p">[</span>j<span class="p">]</span> <span class="o">+</span> d<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="o">/</span> ntrial
+<span class="o">+</span>     cv.sd<span class="p">[</span>j<span class="p">]</span> <span class="o">=</span> cv.sd<span class="p">[</span>j<span class="p">]</span> <span class="o">+</span> d<span class="p">[</span><span class="m">2</span><span class="p">]</span> <span class="o">/</span> ntrial
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>This plot shows cross-validated error as a function of the shrinkage parameter. As we can see, the minimum is near the theoretical &#8220;optimum&#8221; we derived.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>alpha<span class="p">,</span> cv<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span>
+<span class="o">+</span>      xlab<span class="o">=</span><span class="s">&#39;Shrinkage parameter, alpha&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;CV(alpha)&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>mu<span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="p">(</span>mu<span class="o">^</span><span class="m">2</span><span class="o">+</span><span class="m">1</span><span class="o">/</span>nsample<span class="p">),</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/9a6b5cee0d.png" src="_images/9a6b5cee0d.png" />
+<dl class="docutils">
+<dt>We can compare this to the MSE curve. The cross-validation curve</dt>
+<dd>should have a similar shape.</dd>
+</dl>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>alpha<span class="p">,</span> mse<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span>
+<span class="o">+</span>      xlab<span class="o">=</span><span class="s">&#39;Shrinkage parameter, alpha&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;MSE(alpha)&#39;</span><span class="p">)</span>
+
+
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>mu<span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="p">(</span>mu<span class="o">^</span><span class="m">2</span><span class="o">+</span><span class="m">1</span><span class="o">/</span>nsample<span class="p">),</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/fe857e2957.png" src="_images/fe857e2957.png" />
+</div>
+<div class="section" id="ridge-regression">
+<h2>Ridge regression<a class="headerlink" href="#ridge-regression" title="Permalink to this headline">¶</a></h2>
+<p>The data is in the <em>lars</em> library, which also has the LASSO code we will use below.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> library<span class="p">(</span>lars<span class="p">)</span>
+<span class="o">&gt;</span> data<span class="p">(</span>diabetes<span class="p">)</span>
+</pre></div>
+</div>
+<p>The ridge regression code is in the <em>MASS</em> library (Modern Applied Statistics in S).</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> library<span class="p">(</span>MASS<span class="p">)</span>
+
+<span class="o">&gt;</span> diabetes.ridge <span class="o">=</span> lm.ridge<span class="p">(</span>diabetes<span class="p">$</span>y ~ diabetes<span class="p">$</span>x<span class="p">,</span> lambda<span class="o">=</span>seq<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">,</span><span class="m">0.05</span><span class="p">))</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>diabetes.ridge<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/1dc0a21b67.png" src="_images/1dc0a21b67.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>diabetes.ridge<span class="p">$</span>lambda<span class="p">,</span> diabetes.ridge<span class="p">$</span>GCV<span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Lambda&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;GCV&#39;</span><span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+
+
+<span class="o">&gt;</span> select<span class="p">(</span>diabetes.ridge<span class="p">)</span>
+modified HKB estimator is <span class="m">5.462251</span> 
+modified L<span class="o">-</span>W estimator is <span class="m">7.641667</span> 
+smallest value of GCV  at <span class="m">3.25</span> 
+</pre></div>
+</div>
+<img alt="_images/6fbda6e3b3.png" src="_images/6fbda6e3b3.png" />
+</div>
+<div class="section" id="lasso">
+<h2>LASSO<a class="headerlink" href="#lasso" title="Permalink to this headline">¶</a></h2>
+<p>The <em>lars</em> package has the LASSO fitting algorithm. The result of which
+is a path of coefficients, evaluated as a function of the <img class="math" src="_images/math/3ff9d2add1273f7f294d4f0318b0ed4340c07768.png" alt="\ell_1"/>
+norm of the estimated coefficients.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> library<span class="p">(</span>lars<span class="p">)</span>
+<span class="o">&gt;</span> data<span class="p">(</span>diabetes<span class="p">)</span>
+
+<span class="o">&gt;</span> diabetes.lasso <span class="o">=</span> lars<span class="p">(</span>diabetes<span class="p">$</span>x<span class="p">,</span> diabetes<span class="p">$</span>y<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;lasso&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>diabetes.lasso<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/5405c7af69.png" src="_images/5405c7af69.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> cv.lars<span class="p">(</span>diabetes<span class="p">$</span>x<span class="p">,</span> diabetes<span class="p">$</span>y<span class="p">,</span> K<span class="o">=</span><span class="m">10</span><span class="p">,</span> type<span class="o">=</span><span class="s">&#39;lasso&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/28ed713a9a.png" src="_images/28ed713a9a.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="poisson.html" title="Poisson regression"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

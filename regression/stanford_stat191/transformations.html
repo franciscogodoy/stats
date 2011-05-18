@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Transformations & Weighted Least Squares &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Correlated errors" href="correlated_errors.html" />
+    <link rel="prev" title="Interactions & ANOVA" href="interactions.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="correlated_errors.html" title="Correlated errors"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="interactions.html" title="Interactions & ANOVA"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Transformations &amp; Weighted Least Squares</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#bacteria-example">Bacteria Example</a></li>
+<li><a class="reference external" href="#education-example">Education Example</a></li>
+<li><a class="reference external" href="#efficiency">Efficiency</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="interactions.html"
+                                  title="previous chapter">Interactions &amp; ANOVA</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="correlated_errors.html"
+                                  title="next chapter">Correlated errors</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/transformations.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="transformations-weighted-least-squares">
+<span id="interactions"></span><h1>Transformations &amp; Weighted Least Squares<a class="headerlink" href="#transformations-weighted-least-squares" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/transformations.pdf">here</a>.</p>
+</div>
+<div class="section" id="bacteria-example">
+<h2>Bacteria Example<a class="headerlink" href="#bacteria-example" title="Permalink to this headline">¶</a></h2>
+<p>This example shows a figure of exponential decay in a
+population of bacteria.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/bacteria.table&#39;</span>
+
+<span class="o">&gt;</span> bacteria.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>bacteria.table<span class="p">)</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>bacteria.table<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> bacteria.lm <span class="o">&lt;-</span> lm<span class="p">(</span>N_t ~ t<span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>bacteria.lm<span class="p">$</span>coef<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/804ec855ff.png" src="_images/804ec855ff.png" />
+<p>We could fit a linear, model, though the fit is obviously
+not great, as seen by the diagnostics.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>bacteria.lm<span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/30ca0a7320.png" src="_images/30ca0a7320.png" />
+<p>A more natural model is a log-linear model. Note that this means,
+in our standard assumptions, that are errors are Gaussian
+on a logarithmic scale.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> bacteria.log.lm <span class="o">&lt;-</span> lm<span class="p">(</span>log<span class="p">(</span>N_t<span class="p">)</span> ~ t<span class="p">)</span>
+<span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>bacteria.log.lm<span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/aa5be1ec90.png" src="_images/aa5be1ec90.png" />
+<p>Here&#8217;s a comparison of the fitted values.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>bacteria.table<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>t<span class="p">,</span> fitted<span class="p">(</span>bacteria.lm<span class="p">),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>t<span class="p">,</span> exp<span class="p">(</span>fitted<span class="p">(</span>bacteria.log.lm<span class="p">)),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/e703ad9ccf.png" src="_images/e703ad9ccf.png" />
+</div>
+<div class="section" id="education-example">
+<h2>Education Example<a class="headerlink" href="#education-example" title="Permalink to this headline">¶</a></h2>
+<p>This example studies the per capita expenditure by state in the
+mid 1970&#8217;s. The states are broken into 4 regions and it seems
+the variance of the expenditure varies greatly by region. We will use
+weighted least squares and a two-stage procedure to try to
+address this.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/education1975.table&#39;</span>
+<span class="o">&gt;</span> education.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> education.table<span class="p">$</span>Region <span class="o">&lt;-</span> factor<span class="p">(</span>education.table<span class="p">$</span>Region<span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>education.table<span class="p">)</span>
+
+	The following object<span class="p">(</span>s<span class="p">)</span> are masked _by_ <span class="m">.</span>GlobalEnv :
+
+	 X2 
+
+
+<span class="o">&gt;</span> education.lm <span class="o">&lt;-</span> lm<span class="p">(</span>Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3<span class="p">,</span> data<span class="o">=</span>education.table<span class="p">)</span>
+
+<span class="c1"># Standard plots</span>
+
+<span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>education.lm<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/7477888ada.png" src="_images/7477888ada.png" />
+<p>Note the strong outlier: it is Alaska. Even so, we see some
+variability between the variance across regions.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+<span class="o">&gt;</span> boxplot<span class="p">(</span>rstandard<span class="p">(</span>education.lm<span class="p">)</span> ~ Region<span class="p">,</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="s">&#39;green&#39;</span><span class="p">,</span>
+<span class="o">+</span>                                             <span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="s">&#39;yellow&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/690cdb2a3e.png" src="_images/690cdb2a3e.png" />
+<p>Let&#8217;s redo things with Alaska removed.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> keep.subset <span class="o">&lt;-</span> <span class="p">(</span>STATE <span class="o">!=</span> <span class="s">&#39;AK&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;</span> education.noAK.lm <span class="o">&lt;-</span> lm<span class="p">(</span>Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3<span class="p">,</span> subset<span class="o">=</span>keep.subset<span class="p">,</span> data<span class="o">=</span>education.table<span class="p">)</span>
+
+<span class="o">&gt;</span> summary<span class="p">(</span>education.noAK.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3<span class="p">,</span> data <span class="o">=</span> education.table<span class="p">,</span> subset <span class="o">=</span> keep.subset<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-81.128</span> <span class="m">-22.154</span>  <span class="m">-7.542</span>  <span class="m">22.542</span>  <span class="m">80.890</span> 
+
+Coefficients:
+              Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-277.57731</span>  <span class="m">132.42286</span>  <span class="m">-2.096</span> <span class="m">0.041724</span> <span class="o">*</span>  
+X1             <span class="m">0.04829</span>    <span class="m">0.01215</span>   <span class="m">3.976</span> <span class="m">0.000252</span> <span class="o">***</span>
+X2             <span class="m">0.88693</span>    <span class="m">0.33114</span>   <span class="m">2.678</span> <span class="m">0.010291</span> <span class="o">*</span>  
+X3             <span class="m">0.06679</span>    <span class="m">0.04934</span>   <span class="m">1.354</span> <span class="m">0.182591</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">35.81</span> on <span class="m">45</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.4967</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.4631</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:  <span class="m">14.8</span> on <span class="m">3</span> and <span class="m">45</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">7.653</span>e<span class="o">-</span><span class="m">07</span> 
+
+
+<span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>education.noAK.lm<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/43283899d1.png" src="_images/43283899d1.png" />
+<p>The boxplot of residuals shows the same patter.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+<span class="o">&gt;</span> boxplot<span class="p">(</span>rstandard<span class="p">(</span>education.noAK.lm<span class="p">)</span> ~ Region<span class="p">[</span>keep.subset<span class="p">],</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="s">&#39;green&#39;</span><span class="p">,</span>
+<span class="o">+</span>                                          <span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="s">&#39;yellow&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/87ba1626cf.png" src="_images/87ba1626cf.png" />
+<p>First, we estimate the weights by region, choosing
+them to be inversely proportional to
+the MSE within that region.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Estimate weights by region</span>
+
+<span class="o">&gt;</span> weights <span class="o">&lt;-</span> <span class="m">0</span> <span class="o">*</span> education.table<span class="p">$</span>Y
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>region in levels<span class="p">(</span>Region<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>   subset.region <span class="o">&lt;-</span> <span class="p">(</span>Region<span class="p">[</span>keep.subset<span class="p">]</span> <span class="o">==</span> region<span class="p">)</span>
+<span class="o">+</span>   weights<span class="p">[</span>subset.region<span class="p">]</span> <span class="o">&lt;-</span> <span class="m">1.0</span> <span class="o">/</span> <span class="p">(</span>sum<span class="p">(</span>resid<span class="p">(</span>education.noAK.lm<span class="p">)[</span>subset.region<span class="p">]</span><span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> sum<span class="p">(</span>subset.region<span class="p">))</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>We now refit, the model, using a <em>weights</em> argument to <em>lm</em></p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> education.noAK.weight.lm <span class="o">&lt;-</span> lm<span class="p">(</span>Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3<span class="p">,</span> weights<span class="o">=</span>weights<span class="p">,</span> subset<span class="o">=</span>keep.subset<span class="p">,</span> data<span class="o">=</span>education.table<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>education.noAK.weight.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Y ~ X1 <span class="o">+</span> X2 <span class="o">+</span> X3<span class="p">,</span> data <span class="o">=</span> education.table<span class="p">,</span> subset <span class="o">=</span> keep.subset<span class="p">,</span> 
+    weights <span class="o">=</span> weights<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-1.69882</span> <span class="m">-0.71382</span> <span class="m">-0.07928</span>  <span class="m">0.79298</span>  <span class="m">1.86328</span> 
+
+Coefficients:
+              Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">-3.181</span>e<span class="o">+</span><span class="m">02</span>  <span class="m">7.833</span>e<span class="o">+</span><span class="m">01</span>  <span class="m">-4.060</span> <span class="m">0.000193</span> <span class="o">***</span>
+X1           <span class="m">6.245</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">7.867</span>e<span class="o">-</span><span class="m">03</span>   <span class="m">7.938</span> <span class="m">4.24</span>e<span class="o">-</span><span class="m">10</span> <span class="o">***</span>
+X2           <span class="m">8.791</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">2.003</span>e<span class="o">-</span><span class="m">01</span>   <span class="m">4.388</span> <span class="m">6.83</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+X3           <span class="m">2.981</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">3.421</span>e<span class="o">-</span><span class="m">02</span>   <span class="m">0.871</span> <span class="m">0.388178</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">0.984</span> on <span class="m">45</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.7566</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.7404</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">46.63</span> on <span class="m">3</span> and <span class="m">45</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">7.41</span>e<span class="o">-</span><span class="m">14</span> 
+
+
+<span class="c1"># Plot again</span>
+
+<span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>education.noAK.weight.lm<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/79a18b37df.png" src="_images/79a18b37df.png" />
+<p>In the boxplot, we look at the <em>weighted</em> residuals, in this case
+called the Pearson residuals. The Pearson residuals
+seem more balanced among the regions.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+<span class="o">&gt;</span> boxplot<span class="p">(</span>resid<span class="p">(</span>education.noAK.weight.lm<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;pearson&#39;</span><span class="p">)</span> ~ Region<span class="p">[</span>keep.subset<span class="p">],</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span>
+<span class="o">+</span>                                                     <span class="s">&#39;green&#39;</span><span class="p">,</span>
+<span class="o">+</span>                                                     <span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="s">&#39;yellow&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/1206bd472b.png" src="_images/1206bd472b.png" />
+</div>
+<div class="section" id="efficiency">
+<h2>Efficiency<a class="headerlink" href="#efficiency" title="Permalink to this headline">¶</a></h2>
+<p>This example investigates the concept of <em>efficiency</em>. There
+are generally several unbiased estimators
+of a parameter. The most efficient estimator
+leads to the tightest confidence intervals. In this
+example, we&#8217;ll compare three differently weighted
+estimates of a population mean, when each observation
+has different variance.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> ntrial <span class="o">&lt;-</span> <span class="m">2000</span>   <span class="c1"># how many trials will we be doing?</span>
+<span class="o">&gt;</span> nsample <span class="o">&lt;-</span> <span class="m">20</span>   <span class="c1"># how many points in each trial</span>
+<span class="o">&gt;</span> sd <span class="o">&lt;-</span> c<span class="p">(</span><span class="m">1</span>:<span class="m">20</span><span class="p">)</span>   <span class="c1"># how does the variance change</span>
+<span class="o">&gt;</span> mu <span class="o">&lt;-</span> <span class="m">2.0</span>
+
+<span class="o">&gt;</span> get.sample <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>rnorm<span class="p">(</span>nsample<span class="p">)</span><span class="o">*</span>sd <span class="o">+</span> mu<span class="p">)</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>The first is the standard, unweighted estimate, the mean. The second
+is the optimally weighted estimate, while the third
+is one that is weighted but not with the exactly optimal weights.
+We will see that it does better than the mean, but not
+as well as the optimally weighted one.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> unweighted.estimate <span class="o">&lt;-</span> numeric<span class="p">(</span>ntrial<span class="p">)</span>
+<span class="o">&gt;</span> weighted.estimate <span class="o">&lt;-</span> numeric<span class="p">(</span>ntrial<span class="p">)</span>
+<span class="o">&gt;</span> wrongly.weighted.estimate <span class="o">&lt;-</span> numeric<span class="p">(</span>ntrial<span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:ntrial<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   cur.sample <span class="o">&lt;-</span> get.sample<span class="p">()</span>
+<span class="o">+</span>   unweighted.estimate<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> mean<span class="p">(</span>cur.sample<span class="p">)</span>
+<span class="o">+</span>   weighted.estimate<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> sum<span class="p">(</span>cur.sample<span class="o">/</span>sd<span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> sum<span class="p">(</span><span class="m">1</span><span class="o">/</span>sd<span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<span class="o">+</span>   wrongly.weighted.estimate<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> sum<span class="p">(</span>cur.sample<span class="o">/</span>sd<span class="p">)</span> <span class="o">/</span> sum<span class="p">(</span><span class="m">1</span><span class="o">/</span>sd<span class="p">)</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> data.frame<span class="p">(</span>unweighted<span class="o">=</span>c<span class="p">(</span>mean<span class="p">(</span>unweighted.estimate<span class="p">),</span>
+<span class="o">+</span>                    sd<span class="p">(</span>unweighted.estimate<span class="p">)),</span>
+<span class="o">+</span>                  weighted<span class="o">=</span>c<span class="p">(</span>mean<span class="p">(</span>weighted.estimate<span class="p">),</span>
+<span class="o">+</span>                    sd<span class="p">(</span>weighted.estimate<span class="p">)),</span>
+<span class="o">+</span>                  wrongly.weighted<span class="o">=</span>c<span class="p">(</span>mean<span class="p">(</span>wrongly.weighted.estimate<span class="p">),</span>
+<span class="o">+</span>                    sd<span class="p">(</span>wrongly.weighted.estimate<span class="p">))</span>
+<span class="o">+</span>                  <span class="p">)</span>
+  unweighted  weighted wrongly.weighted
+<span class="m">1</span>   <span class="m">2.036449</span> <span class="m">2.0200049</span>         <span class="m">2.034225</span>
+<span class="m">2</span>   <span class="m">2.638243</span> <span class="m">0.8106822</span>         <span class="m">1.243846</span>
+</pre></div>
+</div>
+<p>We can visualize efficiency in terms of the spread of the distribution
+of the three estimators.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> Y <span class="o">&lt;-</span> c<span class="p">(</span>density<span class="p">(</span>unweighted.estimate<span class="p">)$</span>y<span class="p">,</span> density<span class="p">(</span>weighted.estimate<span class="p">)$</span>y<span class="p">,</span> density<span class="p">(</span>wrongly.weighted.estimate<span class="p">)$</span>y<span class="p">)</span>
+<span class="o">&gt;</span> X <span class="o">&lt;-</span> c<span class="p">(</span>density<span class="p">(</span>unweighted.estimate<span class="p">)$</span>x<span class="p">,</span> density<span class="p">(</span>weighted.estimate<span class="p">)$</span>x<span class="p">,</span> density<span class="p">(</span>wrongly.weighted.estimate<span class="p">)$</span>x<span class="p">)</span>
+
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> Y<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">,</span> main<span class="o">=</span><span class="s">&#39;Comparison of densities of the estimators&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>density<span class="p">(</span>weighted.estimate<span class="p">),</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>density<span class="p">(</span>unweighted.estimate<span class="p">),</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>density<span class="p">(</span>wrongly.weighted.estimate<span class="p">),</span> col<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> legend<span class="p">(</span><span class="m">6</span><span class="p">,</span><span class="m">0.3</span><span class="p">,</span> c<span class="p">(</span><span class="s">&#39;optimal&#39;</span><span class="p">,</span> <span class="s">&#39;mean&#39;</span><span class="p">,</span> <span class="s">&#39;suboptimal&#39;</span><span class="p">),</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="s">&#39;purple&#39;</span><span class="p">),</span> lwd<span class="o">=</span>rep<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/9f5b454fae.png" src="_images/9f5b454fae.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="correlated_errors.html" title="Correlated errors"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="interactions.html" title="Interactions & ANOVA"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

@@ -12,16 +12,17 @@
 	##########################
 
 
-	wind_data = read.table(windmill.data', sep=',', header=T);
+	wind_data = read.table('windmill.data', sep=',', header=T);
 	attach(wind_data);
 
 	n = nrow(wind_data);
 
 	wind.lm= lm(y ~ x , data=wind_data);	
-	
-	influence(wind.lm);
+	plot(x, y, pch=23, bg='orange', cex=2);
 
-	infl = influence.measures(deli.lm);
+	plot(wind.lm, pch=23, bg='orange', cex=2);
+
+	influence.measures(wind.lm);
 
 	# residuals e = y^ - y
 	e = resid(deli.lm);

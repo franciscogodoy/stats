@@ -1,0 +1,554 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Logistic regression &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Poisson regression" href="poisson.html" />
+    <link rel="prev" title="Model selection" href="selection.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="poisson.html" title="Poisson regression"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="selection.html" title="Model selection"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Logistic regression</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#logistic-transform">Logistic transform</a></li>
+<li><a class="reference external" href="#flu-shot-example">Flu shot example</a></li>
+<li><a class="reference external" href="#irls">IRLS</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="selection.html"
+                                  title="previous chapter">Model selection</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="poisson.html"
+                                  title="next chapter">Poisson regression</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/logistic.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="logistic-regression">
+<span id="logistic"></span><h1>Logistic regression<a class="headerlink" href="#logistic-regression" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/logistic.pdf">here</a>.</p>
+</div>
+<div class="section" id="logistic-transform">
+<h2>Logistic transform<a class="headerlink" href="#logistic-transform" title="Permalink to this headline">¶</a></h2>
+<p>The logistic curve is a sigmoidal curve starting at 0 at <img class="math" src="_images/math/afac538740054d4786c170ef0123850adea5cdf9.png" alt="-\infty"/>, and
+rising to 1. Hence, it is a distribution function, also called the
+logistic distribution.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> g <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>log<span class="p">(</span>x <span class="o">/</span> <span class="p">(</span><span class="m">1</span> <span class="o">-</span> x<span class="p">)))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> g.inv <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>y<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>exp<span class="p">(</span>y<span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="m">1</span> <span class="o">+</span> exp<span class="p">(</span>y<span class="p">)))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> p <span class="o">=</span> seq<span class="p">(</span>g<span class="p">(</span><span class="m">0.01</span><span class="p">),</span> g<span class="p">(</span><span class="m">0.99</span><span class="p">),</span> length<span class="o">=</span><span class="m">200</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>p<span class="p">,</span> g.inv<span class="p">(</span>p<span class="p">),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/9aafc90f62.png" src="_images/9aafc90f62.png" />
+<p>The logistic transform, or <em>logit</em> is the quantile
+function of this distribution.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> x <span class="o">=</span> seq<span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="m">0.99</span><span class="p">,</span>length<span class="o">=</span><span class="m">200</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>x<span class="p">,</span> g<span class="p">(</span>x<span class="p">),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/9b69173c09.png" src="_images/9b69173c09.png" />
+</div>
+<div class="section" id="flu-shot-example">
+<h2>Flu shot example<a class="headerlink" href="#flu-shot-example" title="Permalink to this headline">¶</a></h2>
+<p>This is the flu data discussed in the notes. We will fit a logistic
+regression model to it using the <em>R</em> function <em>glm</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/flu.table&#39;</span>
+<span class="o">&gt;</span> flu.table <span class="o">=</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+
+<span class="o">&gt;</span> pairs<span class="p">(</span>flu.table<span class="p">,</span> cex.labels<span class="o">=</span><span class="m">3</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span>       bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/374b76d4f4.png" src="_images/374b76d4f4.png" />
+<p>Fitting the model is very much like using <em>lm</em> only we have
+to specify what is called the <em>family</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> flu.glm <span class="o">=</span> glm<span class="p">(</span>Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> data<span class="o">=</span>flu.table<span class="p">,</span> family<span class="o">=</span>binomial<span class="p">())</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>flu.glm<span class="p">)</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(),</span> 
+    data <span class="o">=</span> flu.table<span class="p">)</span>
+
+Deviance Residuals: 
+    Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max  
+<span class="m">-1.5522</span>  <span class="m">-0.2962</span>  <span class="m">-0.1124</span>   <span class="m">0.4208</span>   <span class="m">2.3244</span>  
+
+Coefficients:
+              Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">-21.58458</span>    <span class="m">6.41824</span>  <span class="m">-3.363</span> <span class="m">0.000771</span> <span class="o">***</span>
+Age            <span class="m">0.22178</span>    <span class="m">0.07436</span>   <span class="m">2.983</span> <span class="m">0.002858</span> <span class="o">**</span> 
+Health.Aware   <span class="m">0.20351</span>    <span class="m">0.06273</span>   <span class="m">3.244</span> <span class="m">0.001178</span> <span class="o">**</span> 
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for binomial family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">68.029</span>  on <span class="m">49</span>  degrees of freedom
+Residual deviance: <span class="m">32.416</span>  on <span class="m">47</span>  degrees of freedom
+AIC: <span class="m">38.416</span>
+
+Number of Fisher Scoring iterations: <span class="m">6</span>
+</pre></div>
+</div>
+<p>Diagnostics can be plotted just as for <em>lm</em>. The residuals
+used here are what are called <em>deviance residuals</em>, not just
+<img class="math" src="_images/math/3888961393500c05309262bbc83ff79e285842a5.png" alt="Y_i-\hat{Y_i}"/>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> par<span class="p">(</span>mfrow<span class="o">=</span>c<span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>flu.glm<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/3e16cc63e5.png" src="_images/3e16cc63e5.png" />
+<p>Influence measures can also be investigated for <a href="#id1"><span class="problematic" id="id2">*</span></a>glm*s.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> library<span class="p">(</span>car<span class="p">)</span>
+<span class="o">&gt;</span> influence.measures<span class="p">(</span>flu.glm<span class="p">)</span>
+Influence measures of
+	 glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(),</span>      data <span class="o">=</span> flu.table<span class="p">)</span> :
+
+      dfb.1_  dfb.Age dfb.Hl.A    dffit cov.r   cook.d     hat inf
+<span class="m">1</span>  <span class="m">-0.017208</span>  <span class="m">0.01543</span>  <span class="m">0.01564</span> <span class="m">-0.01763</span> <span class="m">1.083</span> <span class="m">3.66</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.01604</span>    
+<span class="m">2</span>  <span class="m">-0.102897</span>  <span class="m">0.09560</span>  <span class="m">0.10416</span>  <span class="m">0.13491</span> <span class="m">1.102</span> <span class="m">2.24</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05231</span>    
+<span class="m">3</span>  <span class="m">-0.015043</span>  <span class="m">0.01280</span>  <span class="m">0.01442</span> <span class="m">-0.01556</span> <span class="m">1.081</span> <span class="m">2.85</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.01454</span>    
+<span class="m">4</span>  <span class="m">-0.058889</span>  <span class="m">0.02418</span>  <span class="m">0.11920</span>  <span class="m">0.28755</span> <span class="m">1.040</span> <span class="m">1.18</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.05850</span>    
+<span class="m">5</span>  <span class="m">-0.103488</span>  <span class="m">0.03853</span>  <span class="m">0.17167</span>  <span class="m">0.23475</span> <span class="m">1.144</span> <span class="m">6.94</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.09789</span>    
+<span class="m">6</span>  <span class="m">-0.130919</span>  <span class="m">0.11898</span>  <span class="m">0.11098</span> <span class="m">-0.15203</span> <span class="m">1.109</span> <span class="m">2.86</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.06040</span>    
+<span class="m">7</span>  <span class="m">-0.066734</span>  <span class="m">0.06691</span>  <span class="m">0.06003</span>  <span class="m">0.07761</span> <span class="m">1.104</span> <span class="m">7.22</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.04249</span>    
+<span class="m">8</span>  <span class="m">-0.043827</span>  <span class="m">0.04399</span>  <span class="m">0.03438</span> <span class="m">-0.04704</span> <span class="m">1.101</span> <span class="m">2.62</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.03508</span>    
+<span class="m">9</span>  <span class="m">-0.018883</span>  <span class="m">0.01881</span>  <span class="m">0.01515</span> <span class="m">-0.01980</span> <span class="m">1.085</span> <span class="m">4.62</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.01867</span>    
+<span class="m">10</span> <span class="m">-0.112978</span>  <span class="m">0.09695</span>  <span class="m">0.13265</span>  <span class="m">0.20841</span> <span class="m">1.076</span> <span class="m">5.68</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05526</span>    
+<span class="m">11</span> <span class="m">-0.009578</span>  <span class="m">0.09584</span> <span class="m">-0.04305</span>  <span class="m">0.36490</span> <span class="m">1.004</span> <span class="m">2.08</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.06318</span>    
+<span class="m">12</span>  <span class="m">0.020212</span> <span class="m">-0.13373</span>  <span class="m">0.05812</span> <span class="m">-0.43566</span> <span class="m">0.979</span> <span class="m">3.20</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.07059</span>    
+<span class="m">13</span>  <span class="m">0.192770</span> <span class="m">-0.50776</span>  <span class="m">0.11790</span> <span class="m">-0.93778</span> <span class="m">1.040</span> <span class="m">1.63</span>e<span class="o">-</span><span class="m">01</span> <span class="m">0.18972</span>   <span class="o">*</span>
+<span class="m">14</span>  <span class="m">0.372025</span> <span class="m">-0.47261</span> <span class="m">-0.14549</span>  <span class="m">0.68814</span> <span class="m">0.902</span> <span class="m">1.02</span>e<span class="o">-</span><span class="m">01</span> <span class="m">0.09827</span>    
+<span class="m">15</span> <span class="m">-0.038716</span>  <span class="m">0.03596</span>  <span class="m">0.03351</span> <span class="m">-0.04035</span> <span class="m">1.095</span> <span class="m">1.93</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.02970</span>    
+<span class="m">16</span> <span class="m">-0.057484</span>  <span class="m">0.06480</span>  <span class="m">0.03735</span> <span class="m">-0.06892</span> <span class="m">1.121</span> <span class="m">5.65</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.05393</span>    
+<span class="m">17</span> <span class="m">-0.046412</span>  <span class="m">0.13914</span> <span class="m">-0.10858</span> <span class="m">-0.47973</span> <span class="m">0.993</span> <span class="m">3.86</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.08404</span>    
+<span class="m">18</span> <span class="m">-0.029026</span>  <span class="m">0.02499</span>  <span class="m">0.03004</span>  <span class="m">0.03257</span> <span class="m">1.090</span> <span class="m">1.25</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.02416</span>    
+<span class="m">19</span>  <span class="m">0.111762</span>  <span class="m">0.19947</span> <span class="m">-0.49074</span> <span class="m">-1.00669</span> <span class="m">0.979</span> <span class="m">2.10</span>e<span class="o">-</span><span class="m">01</span> <span class="m">0.18084</span>   <span class="o">*</span>
+<span class="m">20</span> <span class="m">-0.063893</span>  <span class="m">0.05199</span>  <span class="m">0.06246</span> <span class="m">-0.06972</span> <span class="m">1.105</span> <span class="m">5.80</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.04169</span>    
+<span class="m">21</span> <span class="m">-0.148884</span>  <span class="m">0.11621</span>  <span class="m">0.14276</span> <span class="m">-0.19327</span> <span class="m">1.096</span> <span class="m">4.76</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.06199</span>    
+<span class="m">22</span> <span class="m">-0.046451</span>  <span class="m">0.03665</span>  <span class="m">0.05220</span>  <span class="m">0.05658</span> <span class="m">1.101</span> <span class="m">3.81</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.03615</span>    
+<span class="m">23</span> <span class="m">-0.058938</span>  <span class="m">0.03695</span>  <span class="m">0.06933</span> <span class="m">-0.07587</span> <span class="m">1.116</span> <span class="m">6.87</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.05121</span>    
+<span class="m">24</span> <span class="m">-0.046668</span>  <span class="m">0.04039</span>  <span class="m">0.04338</span> <span class="m">-0.04918</span> <span class="m">1.098</span> <span class="m">2.87</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.03329</span>    
+<span class="m">25</span>  <span class="m">0.181347</span> <span class="m">-0.10844</span> <span class="m">-0.17866</span>  <span class="m">0.43049</span> <span class="m">0.921</span> <span class="m">3.50</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.05453</span>    
+<span class="m">26</span> <span class="m">-0.009162</span>  <span class="m">0.00759</span>  <span class="m">0.00903</span> <span class="m">-0.00953</span> <span class="m">1.077</span> <span class="m">1.07</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.00994</span>    
+<span class="m">27</span> <span class="m">-0.085845</span>  <span class="m">0.05982</span>  <span class="m">0.10771</span>  <span class="m">0.12539</span> <span class="m">1.116</span> <span class="m">1.91</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05923</span>    
+<span class="m">28</span> <span class="m">-0.030981</span>  <span class="m">0.02315</span>  <span class="m">0.03287</span> <span class="m">-0.03466</span> <span class="m">1.094</span> <span class="m">1.42</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.02750</span>    
+<span class="m">29</span> <span class="m">-0.017942</span>  <span class="m">0.01549</span>  <span class="m">0.01840</span>  <span class="m">0.01972</span> <span class="m">1.083</span> <span class="m">4.58</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.01681</span>    
+<span class="m">30</span> <span class="m">-0.140841</span>  <span class="m">0.11498</span>  <span class="m">0.13148</span> <span class="m">-0.17269</span> <span class="m">1.103</span> <span class="m">3.74</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.06098</span>    
+<span class="m">31</span> <span class="m">-0.160987</span>  <span class="m">0.27877</span>  <span class="m">0.03379</span>  <span class="m">0.40526</span> <span class="m">1.178</span> <span class="m">2.18</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.14807</span>    
+<span class="m">32</span> <span class="m">-0.005600</span>  <span class="m">0.00447</span>  <span class="m">0.00572</span> <span class="m">-0.00592</span> <span class="m">1.074</span> <span class="m">4.12</span>e<span class="o">-</span><span class="m">06</span> <span class="m">0.00685</span>    
+<span class="m">33</span> <span class="m">-0.094999</span>  <span class="m">0.09844</span>  <span class="m">0.08375</span>  <span class="m">0.11838</span> <span class="m">1.107</span> <span class="m">1.71</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05249</span>    
+<span class="m">34</span> <span class="m">-0.003504</span>  <span class="m">0.00331</span>  <span class="m">0.00324</span>  <span class="m">0.00365</span> <span class="m">1.071</span> <span class="m">1.57</span>e<span class="o">-</span><span class="m">06</span> <span class="m">0.00442</span>    
+<span class="m">35</span> <span class="m">-0.106728</span>  <span class="m">0.08563</span>  <span class="m">0.10366</span> <span class="m">-0.12263</span> <span class="m">1.111</span> <span class="m">1.83</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05562</span>    
+<span class="m">36</span> <span class="m">-0.019690</span>  <span class="m">0.01858</span>  <span class="m">0.01689</span> <span class="m">-0.02026</span> <span class="m">1.085</span> <span class="m">4.84</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.01820</span>    
+<span class="m">37</span> <span class="m">-0.094324</span>  <span class="m">0.08615</span>  <span class="m">0.09622</span>  <span class="m">0.11987</span> <span class="m">1.104</span> <span class="m">1.76</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05039</span>    
+<span class="m">38</span>  <span class="m">0.652043</span> <span class="m">-0.52099</span> <span class="m">-0.63916</span>  <span class="m">0.73958</span> <span class="m">0.630</span> <span class="m">2.72</span>e<span class="o">-</span><span class="m">01</span> <span class="m">0.05275</span>   <span class="o">*</span>
+<span class="m">39</span> <span class="m">-0.019865</span>  <span class="m">0.16852</span> <span class="m">-0.19502</span> <span class="m">-0.60555</span> <span class="m">0.998</span> <span class="m">6.42</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.11145</span>    
+<span class="m">40</span> <span class="m">-0.114652</span>  <span class="m">0.12911</span>  <span class="m">0.09175</span>  <span class="m">0.15634</span> <span class="m">1.110</span> <span class="m">3.03</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.06186</span>    
+<span class="m">41</span> <span class="m">-0.094999</span>  <span class="m">0.09844</span>  <span class="m">0.08375</span>  <span class="m">0.11838</span> <span class="m">1.107</span> <span class="m">1.71</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05249</span>    
+<span class="m">42</span> <span class="m">-0.019865</span>  <span class="m">0.16852</span> <span class="m">-0.19502</span> <span class="m">-0.60555</span> <span class="m">0.998</span> <span class="m">6.42</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.11145</span>    
+<span class="m">43</span> <span class="m">-0.069257</span> <span class="m">-0.23785</span>  <span class="m">0.34314</span> <span class="m">-0.81279</span> <span class="m">1.267</span> <span class="m">9.58</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.25544</span>   <span class="o">*</span>
+<span class="m">44</span>  <span class="m">0.050764</span> <span class="m">-0.06530</span>  <span class="m">0.01674</span>  <span class="m">0.34876</span> <span class="m">0.982</span> <span class="m">1.96</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.05344</span>    
+<span class="m">45</span> <span class="m">-0.079968</span>  <span class="m">0.08479</span>  <span class="m">0.05701</span> <span class="m">-0.09176</span> <span class="m">1.121</span> <span class="m">1.01</span>e<span class="o">-</span><span class="m">03</span> <span class="m">0.05710</span>    
+<span class="m">46</span> <span class="m">-0.038716</span>  <span class="m">0.03596</span>  <span class="m">0.03351</span> <span class="m">-0.04035</span> <span class="m">1.095</span> <span class="m">1.93</span>e<span class="o">-</span><span class="m">04</span> <span class="m">0.02970</span>    
+<span class="m">47</span> <span class="m">-0.000879</span> <span class="m">-0.00838</span>  <span class="m">0.05023</span>  <span class="m">0.31156</span> <span class="m">1.001</span> <span class="m">1.49</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.05090</span>    
+<span class="m">48</span>  <span class="m">0.040334</span> <span class="m">-0.19110</span>  <span class="m">0.07980</span> <span class="m">-0.50899</span> <span class="m">0.992</span> <span class="m">4.40</span>e<span class="o">-</span><span class="m">02</span> <span class="m">0.08986</span>    
+<span class="m">49</span> <span class="m">-0.025666</span>  <span class="m">0.02050</span>  <span class="m">0.02589</span> <span class="m">-0.02749</span> <span class="m">1.089</span> <span class="m">8.92</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.02260</span>    
+<span class="m">50</span> <span class="m">-0.016308</span>  <span class="m">0.01570</span>  <span class="m">0.01369</span> <span class="m">-0.01682</span> <span class="m">1.083</span> <span class="m">3.33</span>e<span class="o">-</span><span class="m">05</span> <span class="m">0.01600</span>    
+</pre></div>
+</div>
+<p>The function <em>predict</em> works just as for <em>lm</em> but it does not
+always give you output on the scale of the <em>response</em>, which
+is 0-1 for binary responses.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> a <span class="o">=</span> predict<span class="p">(</span>flu.glm<span class="p">,</span> list<span class="p">(</span>Age<span class="o">=</span>c<span class="p">(</span><span class="m">35</span><span class="p">,</span><span class="m">45</span><span class="p">),</span>Health.Aware<span class="o">=</span>c<span class="p">(</span><span class="m">50</span><span class="p">,</span><span class="m">50</span><span class="p">)))</span>
+<span class="o">&gt;</span> a
+        <span class="m">1</span>         <span class="m">2</span> 
+<span class="m">-3.647052</span> <span class="m">-1.429284</span> 
+
+<span class="o">&gt;</span> b <span class="o">=</span> predict<span class="p">(</span>flu.glm<span class="p">,</span> list<span class="p">(</span>Age<span class="o">=</span>c<span class="p">(</span><span class="m">35</span><span class="p">,</span><span class="m">45</span><span class="p">),</span>Health.Aware<span class="o">=</span>c<span class="p">(</span><span class="m">50</span><span class="p">,</span><span class="m">50</span><span class="p">)),</span> type<span class="o">=</span><span class="s">&quot;response&quot;</span><span class="p">)</span>
+<span class="o">&gt;</span> b
+         <span class="m">1</span>          <span class="m">2</span> 
+<span class="m">0.02540560</span> <span class="m">0.19321031</span> 
+
+<span class="o">&gt;</span> c <span class="o">=</span> exp<span class="p">(</span>a<span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="m">1</span><span class="o">+</span>exp<span class="p">(</span>a<span class="p">))</span>
+<span class="o">&gt;</span> c
+         <span class="m">1</span>          <span class="m">2</span> 
+<span class="m">0.02540560</span> <span class="m">0.19321031</span> 
+</pre></div>
+</div>
+<p>In class, we discussed the odds ratios and their interpretations as
+approximately ratios of probabilities. This is only
+accurate when the outcome is rare, known as the <em>rare disease</em> hypothesis.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Odds ratios:</span>
+
+<span class="o">&gt;</span> exp<span class="p">(</span>a<span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="o">-</span>a<span class="p">[</span><span class="m">1</span><span class="p">])</span>
+       <span class="m">2</span> 
+<span class="m">9.186801</span> 
+
+<span class="c1"># Ratio of probabilites</span>
+
+<span class="o">&gt;</span> b<span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="o">/</span>b<span class="p">[</span><span class="m">1</span><span class="p">]</span>
+       <span class="m">2</span> 
+<span class="m">7.605027</span> 
+</pre></div>
+</div>
+<p>Comparing models is done with deviance instead of sums of squares. The
+function <em>anova</em> will do this automatically for us.
+Note that the <em>p</em>-value is different using <em>anova</em> and the
+<em>summary</em>. This is because the <em>p</em>-value in the summary table
+is based on a Normal approximation and not a difference of deviances.
+In the <em>lm</em> case, these two things are identical, but not
+necessarily in the <em>glm</em> case. The test using the
+summary table is called a <em>Wald test</em>, whereas the deviance
+one is called a <em>likelihood ratio test</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> reduced.glm <span class="o">=</span> glm<span class="p">(</span>Shot ~ Health.Aware<span class="p">,</span> family<span class="o">=</span>binomial<span class="p">(),</span> data<span class="o">=</span>flu.table<span class="p">)</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>reduced.glm<span class="p">,</span> flu.glm<span class="p">)</span>
+Analysis of Deviance Table
+
+Model <span class="m">1</span>: Shot ~ Health.Aware
+Model <span class="m">2</span>: Shot ~ Age <span class="o">+</span> Health.Aware
+  Resid. Df Resid. Dev Df Deviance
+<span class="m">1</span>        <span class="m">48</span>     <span class="m">49.279</span>            
+<span class="m">2</span>        <span class="m">47</span>     <span class="m">32.416</span>  <span class="m">1</span>   <span class="m">16.863</span>
+<span class="o">&gt;</span> pval <span class="o">=</span> <span class="m">1</span><span class="o">-</span>pchisq<span class="p">(</span><span class="m">16.863</span><span class="p">,</span><span class="m">1</span><span class="p">)</span>
+<span class="o">&gt;</span> pval
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">4.017719</span>e<span class="o">-</span><span class="m">05</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>flu.glm<span class="p">)</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(),</span> 
+    data <span class="o">=</span> flu.table<span class="p">)</span>
+
+Deviance Residuals: 
+    Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max  
+<span class="m">-1.5522</span>  <span class="m">-0.2962</span>  <span class="m">-0.1124</span>   <span class="m">0.4208</span>   <span class="m">2.3244</span>  
+
+Coefficients:
+              Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">-21.58458</span>    <span class="m">6.41824</span>  <span class="m">-3.363</span> <span class="m">0.000771</span> <span class="o">***</span>
+Age            <span class="m">0.22178</span>    <span class="m">0.07436</span>   <span class="m">2.983</span> <span class="m">0.002858</span> <span class="o">**</span> 
+Health.Aware   <span class="m">0.20351</span>    <span class="m">0.06273</span>   <span class="m">3.244</span> <span class="m">0.001178</span> <span class="o">**</span> 
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for binomial family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">68.029</span>  on <span class="m">49</span>  degrees of freedom
+Residual deviance: <span class="m">32.416</span>  on <span class="m">47</span>  degrees of freedom
+AIC: <span class="m">38.416</span>
+
+Number of Fisher Scoring iterations: <span class="m">6</span>
+</pre></div>
+</div>
+<p>Confidence intervals are also slightly different.
+They are constructed using the likelihood,
+not the summary table (which would be <em>Wald</em> confidence intervals).</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> confint<span class="p">(</span>flu.glm<span class="p">)</span>
+Waiting for profiling to be done...
+                   <span class="m">2.5</span> <span class="o">%</span>      <span class="m">97.5</span> <span class="o">%</span>
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">-38.0402235</span> <span class="m">-11.6669218</span>
+Age            <span class="m">0.1004533</span>   <span class="m">0.4046856</span>
+Health.Aware   <span class="m">0.1026984</span>   <span class="m">0.3595480</span>
+
+<span class="o">&gt;</span> center <span class="o">=</span> coef<span class="p">(</span>flu.glm<span class="p">)[</span><span class="s">&#39;Age&#39;</span><span class="p">]</span>
+<span class="o">&gt;</span> SE <span class="o">=</span> sqrt<span class="p">(</span>vcov<span class="p">(</span>flu.glm<span class="p">)[</span><span class="s">&#39;Age&#39;</span><span class="p">,</span> <span class="s">&#39;Age&#39;</span><span class="p">])</span>
+<span class="o">&gt;</span> U <span class="o">=</span> center <span class="o">+</span> SE <span class="o">*</span> qnorm<span class="p">(</span><span class="m">0.975</span><span class="p">)</span>
+<span class="o">&gt;</span> L <span class="o">=</span> center <span class="o">+</span> SE <span class="o">*</span> qnorm<span class="p">(</span><span class="m">0.025</span><span class="p">)</span>
+<span class="o">&gt;</span> data.frame<span class="p">(</span>center<span class="p">,</span> L<span class="p">,</span> U<span class="p">)</span>
+       center         L         U
+Age <span class="m">0.2217768</span> <span class="m">0.0760395</span> <span class="m">0.3675141</span>
+</pre></div>
+</div>
+<p>Model selection is straightforward.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> step.glm <span class="o">=</span> step<span class="p">(</span>flu.glm<span class="p">,</span> scope<span class="o">=</span>list<span class="p">(</span>upper<span class="o">=</span>~<span class="m">.</span><span class="o">^</span><span class="m">2</span><span class="p">),</span> direction<span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">)</span>
+Start:  AIC<span class="o">=</span><span class="m">38.42</span>
+Shot ~ Age <span class="o">+</span> Health.Aware
+
+                   Df Deviance    AIC
+<span class="o">+</span> Age:Health.Aware  <span class="m">1</span>   <span class="m">24.283</span> <span class="m">32.283</span>
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">32.416</span> <span class="m">38.416</span>
+<span class="o">-</span> Age               <span class="m">1</span>   <span class="m">49.279</span> <span class="m">53.279</span>
+<span class="o">-</span> Health.Aware      <span class="m">1</span>   <span class="m">56.078</span> <span class="m">60.078</span>
+
+Step:  AIC<span class="o">=</span><span class="m">32.28</span>
+Shot ~ Age <span class="o">+</span> Health.Aware <span class="o">+</span> Age:Health.Aware
+
+                   Df Deviance    AIC
+<span class="o">&lt;</span>none<span class="o">&gt;</span>                  <span class="m">24.283</span> <span class="m">32.283</span>
+<span class="o">-</span> Age:Health.Aware  <span class="m">1</span>   <span class="m">32.416</span> <span class="m">38.416</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>step.glm<span class="p">)</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware <span class="o">+</span> Age:Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(),</span> 
+    data <span class="o">=</span> flu.table<span class="p">)</span>
+
+Deviance Residuals: 
+     Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max  
+<span class="m">-1.61676</span>  <span class="m">-0.29207</span>  <span class="m">-0.08471</span>   <span class="m">0.09173</span>   <span class="m">2.21677</span>  
+
+Coefficients:
+                 Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>  
+<span class="p">(</span>Intercept<span class="p">)</span>      <span class="m">26.75944</span>   <span class="m">23.43727</span>   <span class="m">1.142</span>   <span class="m">0.2536</span>  
+Age              <span class="m">-0.88151</span>    <span class="m">0.54477</span>  <span class="m">-1.618</span>   <span class="m">0.1056</span>  
+Health.Aware     <span class="m">-0.82239</span>    <span class="m">0.49928</span>  <span class="m">-1.647</span>   <span class="m">0.0995</span> <span class="m">.</span>
+Age:Health.Aware  <span class="m">0.02365</span>    <span class="m">0.01188</span>   <span class="m">1.990</span>   <span class="m">0.0466</span> <span class="o">*</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for binomial family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">68.029</span>  on <span class="m">49</span>  degrees of freedom
+Residual deviance: <span class="m">24.283</span>  on <span class="m">46</span>  degrees of freedom
+AIC: <span class="m">32.283</span>
+
+Number of Fisher Scoring iterations: <span class="m">7</span>
+</pre></div>
+</div>
+<p>We also talked about <em>probit</em> and <em>cloglog</em> models in class. This is specified using the <em>link</em> argument to <em>binomial</em>, which defaults to <em>logit</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> summary<span class="p">(</span>glm<span class="p">(</span>Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> data<span class="o">=</span>flu.table<span class="p">,</span> family<span class="o">=</span>binomial<span class="p">(</span>link<span class="o">=</span><span class="s">&#39;probit&#39;</span><span class="p">)))</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(</span>link <span class="o">=</span> <span class="s">&quot;probit&quot;</span><span class="p">),</span> 
+    data <span class="o">=</span> flu.table<span class="p">)</span>
+
+Deviance Residuals: 
+    Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max  
+<span class="m">-1.5471</span>  <span class="m">-0.2883</span>  <span class="m">-0.0648</span>   <span class="m">0.4060</span>   <span class="m">2.2955</span>  
+
+Coefficients:
+              Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">-12.35039</span>    <span class="m">3.22797</span>  <span class="m">-3.826</span> <span class="m">0.000130</span> <span class="o">***</span>
+Age            <span class="m">0.12786</span>    <span class="m">0.03887</span>   <span class="m">3.289</span> <span class="m">0.001005</span> <span class="o">**</span> 
+Health.Aware   <span class="m">0.11642</span>    <span class="m">0.03237</span>   <span class="m">3.596</span> <span class="m">0.000323</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for binomial family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">68.029</span>  on <span class="m">49</span>  degrees of freedom
+Residual deviance: <span class="m">32.076</span>  on <span class="m">47</span>  degrees of freedom
+AIC: <span class="m">38.076</span>
+
+Number of Fisher Scoring iterations: <span class="m">7</span>
+
+
+<span class="o">&gt;</span> summary<span class="p">(</span>glm<span class="p">(</span>Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> data<span class="o">=</span>flu.table<span class="p">,</span> family<span class="o">=</span>binomial<span class="p">(</span>link<span class="o">=</span><span class="s">&#39;cloglog&#39;</span><span class="p">)))</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(</span>link <span class="o">=</span> <span class="s">&quot;cloglog&quot;</span><span class="p">),</span> 
+    data <span class="o">=</span> flu.table<span class="p">)</span>
+
+Deviance Residuals: 
+    Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max  
+<span class="m">-1.4766</span>  <span class="m">-0.3145</span>  <span class="m">-0.1457</span>   <span class="m">0.1992</span>   <span class="m">2.2903</span>  
+
+Coefficients:
+              Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">-17.67890</span>    <span class="m">4.85936</span>  <span class="m">-3.638</span> <span class="m">0.000275</span> <span class="o">***</span>
+Age            <span class="m">0.17912</span>    <span class="m">0.05421</span>   <span class="m">3.304</span> <span class="m">0.000952</span> <span class="o">***</span>
+Health.Aware   <span class="m">0.15939</span>    <span class="m">0.04582</span>   <span class="m">3.479</span> <span class="m">0.000503</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for binomial family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">68.029</span>  on <span class="m">49</span>  degrees of freedom
+Residual deviance: <span class="m">30.973</span>  on <span class="m">47</span>  degrees of freedom
+AIC: <span class="m">36.973</span>
+
+Number of Fisher Scoring iterations: <span class="m">8</span>
+
+Warning message:
+In glm.fit<span class="p">(</span>x <span class="o">=</span> X<span class="p">,</span> y <span class="o">=</span> Y<span class="p">,</span> weights <span class="o">=</span> weights<span class="p">,</span> start <span class="o">=</span> start<span class="p">,</span> etastart <span class="o">=</span> etastart<span class="p">,</span>  :
+  fitted probabilities numerically <span class="m">0</span> or <span class="m">1</span> occurred
+</pre></div>
+</div>
+</div>
+<div class="section" id="irls">
+<h2>IRLS<a class="headerlink" href="#irls" title="Permalink to this headline">¶</a></h2>
+<p>Logistic, or binary regression models, can be fit using
+Iteratively Reweighted Least Squares (IRLS). This
+example below shows how this might
+work. For logistic regression, this algorithm
+is a direct implementation of the Newton-Raphson algorithm
+used to minimize smooth functions.
+In <em>R</em>, all of this is done for you by <em>glm</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># We need the derivative of g as well</span>
+
+<span class="o">&gt;</span> g.prime <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span><span class="m">1</span><span class="o">/</span><span class="p">(</span>x<span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="o">-</span>x<span class="p">)))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="c1"># And the &quot;variance function&quot;</span>
+
+<span class="o">&gt;</span> V <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>mu<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">return</span><span class="p">(</span>mu<span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="o">-</span>mu<span class="p">))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="c1"># Iteratively reweighted least squares</span>
+
+<span class="o">&gt;</span> niter <span class="o">=</span> <span class="m">10</span>
+<span class="o">&gt;</span> mu <span class="o">=</span> rep<span class="p">(</span>mean<span class="p">(</span>flu.table<span class="p">$</span>Shot<span class="p">),</span> length<span class="p">(</span>flu.table<span class="p">$</span>Shot<span class="p">))</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:niter<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   Z <span class="o">=</span> g<span class="p">(</span>mu<span class="p">)</span> <span class="o">+</span> g.prime<span class="p">(</span>mu<span class="p">)</span> <span class="o">*</span> <span class="p">(</span>flu.table<span class="p">$</span>Shot <span class="o">-</span> mu<span class="p">)</span>
+<span class="o">+</span>   W <span class="o">=</span> <span class="m">1</span> <span class="o">/</span> <span class="p">(</span>g.prime<span class="p">(</span>mu<span class="p">)</span><span class="o">^</span><span class="m">2</span> <span class="o">*</span> V<span class="p">(</span>mu<span class="p">))</span>
+<span class="o">+</span>   Z.lm <span class="o">=</span> lm<span class="p">(</span>Z ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> weights<span class="o">=</span>W<span class="p">,</span> data<span class="o">=</span>flu.table<span class="p">)</span>
+<span class="o">+</span>   eta <span class="o">=</span> predict<span class="p">(</span>Z.lm<span class="p">)</span>
+<span class="o">+</span>   mu <span class="o">=</span> g.inv<span class="p">(</span>eta<span class="p">)</span>
+<span class="o">+</span>   beta <span class="o">=</span> Z.lm<span class="p">$</span>coef
+<span class="o">+</span>  <span class="p">}</span>
+
+
+<span class="o">&gt;</span> X <span class="o">=</span> model.matrix<span class="p">(</span>Z.lm<span class="p">)</span>
+<span class="o">&gt;</span> SE.beta <span class="o">=</span> sqrt<span class="p">(</span>diag<span class="p">(</span>solve<span class="p">(</span>t<span class="p">(</span>X<span class="p">)</span> <span class="o">%*%</span> diag<span class="p">(</span>W<span class="p">)</span> <span class="o">%*%</span> X<span class="p">)))</span>
+<span class="o">&gt;</span> <span class="k-Variable">T</span><span class="m">.</span>beta <span class="o">=</span> beta <span class="o">/</span> SE.beta
+
+<span class="o">&gt;</span> beta
+ <span class="p">(</span>Intercept<span class="p">)</span>          Age Health.Aware 
+ <span class="m">-21.5845821</span>    <span class="m">0.2217768</span>    <span class="m">0.2035069</span> 
+<span class="o">&gt;</span> SE.beta
+ <span class="p">(</span>Intercept<span class="p">)</span>          Age Health.Aware 
+  <span class="m">6.41833931</span>   <span class="m">0.07435807</span>   <span class="m">0.06273086</span> 
+<span class="o">&gt;</span> <span class="k-Variable">T</span><span class="m">.</span>beta
+ <span class="p">(</span>Intercept<span class="p">)</span>          Age Health.Aware 
+   <span class="m">-3.362954</span>     <span class="m">2.982552</span>     <span class="m">3.244127</span> 
+
+<span class="o">&gt;</span> summary<span class="p">(</span>flu.glm<span class="p">)</span>
+
+Call:
+glm<span class="p">(</span>formula <span class="o">=</span> Shot ~ Age <span class="o">+</span> Health.Aware<span class="p">,</span> family <span class="o">=</span> binomial<span class="p">(),</span> 
+    data <span class="o">=</span> flu.table<span class="p">)</span>
+
+Deviance Residuals: 
+    Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max  
+<span class="m">-1.5522</span>  <span class="m">-0.2962</span>  <span class="m">-0.1124</span>   <span class="m">0.4208</span>   <span class="m">2.3244</span>  
+
+Coefficients:
+              Estimate Std. Error z value Pr<span class="p">(</span><span class="o">&gt;|</span>z<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">-21.58458</span>    <span class="m">6.41824</span>  <span class="m">-3.363</span> <span class="m">0.000771</span> <span class="o">***</span>
+Age            <span class="m">0.22178</span>    <span class="m">0.07436</span>   <span class="m">2.983</span> <span class="m">0.002858</span> <span class="o">**</span> 
+Health.Aware   <span class="m">0.20351</span>    <span class="m">0.06273</span>   <span class="m">3.244</span> <span class="m">0.001178</span> <span class="o">**</span> 
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="p">(</span>Dispersion parameter for binomial family taken to be <span class="m">1</span><span class="p">)</span>
+
+    Null deviance: <span class="m">68.029</span>  on <span class="m">49</span>  degrees of freedom
+Residual deviance: <span class="m">32.416</span>  on <span class="m">47</span>  degrees of freedom
+AIC: <span class="m">38.416</span>
+
+Number of Fisher Scoring iterations: <span class="m">6</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="poisson.html" title="Poisson regression"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="selection.html" title="Model selection"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

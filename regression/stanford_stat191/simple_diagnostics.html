@@ -1,0 +1,437 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Diagnostics for simple linear regression model &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Multiple linear regression model" href="multiple.html" />
+    <link rel="prev" title="Simple linear regression" href="simple.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="multiple.html" title="Multiple linear regression model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="simple.html" title="Simple linear regression"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Diagnostics for simple linear regression model</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#goodness-of-fit-sums-of-squares">Goodness of fit, <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/>, sums of squares</a><ul>
+<li><a class="reference external" href="#definition-of">Definition of <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/></a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#poorly-fitting-linear-model">Poorly fitting linear model</a></li>
+<li><a class="reference external" href="#outlier-and-nonconstant-variance">Outlier and nonconstant variance</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="simple.html"
+                                  title="previous chapter">Simple linear regression</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="multiple.html"
+                                  title="next chapter">Multiple linear regression model</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/simple_diagnostics.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="diagnostics-for-simple-linear-regression-model">
+<span id="simple-diagnostics"></span><h1>Diagnostics for simple linear regression model<a class="headerlink" href="#diagnostics-for-simple-linear-regression-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/simple_diagnostics.pdf">here</a>.
+This corresponds
+to part of Chapter 4 of <a class="reference external" href="http://www.ilr.cornell.edu/%7Ehadi/RABE/#Download&quot;">Regression Analysis by Example</a>,
+though this is all in the context of the simple linear
+regression model.</p>
+</div>
+<div class="section" id="goodness-of-fit-sums-of-squares">
+<h2>Goodness of fit, <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/>, sums of squares<a class="headerlink" href="#goodness-of-fit-sums-of-squares" title="Permalink to this headline">¶</a></h2>
+<p>A standard goodness of fit measure is the <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> which
+describes what percentage of the total variability of the
+outcome is described by the model in question.
+The <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> is defined in terms
+of ratios of sums of squares. In the simple
+linear regression case, we can explicitly visualize
+these sums of squares.</p>
+<p>These three figures illustrate the different
+sums of squares in the simple linear regression model.</p>
+<p>The total sum of squares, <img class="math" src="_images/math/f833c31253acccabc493e9b15fd7effd4948ebf6.png" alt="SST"/>, is the sum
+of the squared differences between the <em>Y</em>
+values and the sample mean of the <em>Y</em> values.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> X <span class="o">=</span> seq<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">20</span><span class="p">,</span> length<span class="o">=</span><span class="m">21</span><span class="p">)</span>
+<span class="o">&gt;</span> Y <span class="o">=</span> <span class="m">0.5</span><span class="o">*</span>X<span class="o">+</span><span class="m">1</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">21</span><span class="p">)</span>
+
+<span class="o">&gt;</span> Y.lm <span class="o">=</span> lm<span class="p">(</span>Y~X<span class="p">)</span>
+
+<span class="o">&gt;</span> p <span class="o">=</span> predict<span class="p">(</span>Y.lm<span class="p">)</span>
+<span class="o">&gt;</span> m <span class="o">=</span> mean<span class="p">(</span>Y<span class="p">)</span>
+
+<span class="c1"># SST: deviations of Y&#39;s around </span>
+<span class="c1"># the horizontal line for the mean</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> Y<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>h<span class="o">=</span>m<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">21</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   points<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> m<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">)</span>
+<span class="o">+</span>   lines<span class="p">(</span>c<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> X<span class="p">[</span>i<span class="p">]),</span> c<span class="p">(</span>Y<span class="p">[</span>i<span class="p">],</span> m<span class="p">))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="c1"># show the regression line as well</span>
+
+<span class="o">&gt;</span> abline<span class="p">(</span>Y.lm<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/2ad782fa5c.png" src="_images/2ad782fa5c.png" />
+<p>The error sum of squares, <img class="math" src="_images/math/9896537e71fba372e3719fa3a503164add892243.png" alt="SSE"/>, is the sum of the
+squared differences between the <em>Y</em> values and
+the <em>Yhat</em> values, i.e. the fitted values of the
+regression model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># SSE: deviations of Y&#39;s around </span>
+<span class="c1"># the regression line</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> Y<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>Y.lm<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">21</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   points<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> p<span class="p">[</span>i<span class="p">],</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+<span class="o">+</span>   lines<span class="p">(</span>c<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> X<span class="p">[</span>i<span class="p">]),</span> c<span class="p">(</span>Y<span class="p">[</span>i<span class="p">],</span> p<span class="p">[</span>i<span class="p">]))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> m <span class="o">=</span> mean<span class="p">(</span>Y<span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>h<span class="o">=</span>m<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/efb0d9679a.png" src="_images/efb0d9679a.png" />
+<p>The regression sum of squares, <img class="math" src="_images/math/21babbec4254c77e5b085978af7c331ebba63fcb.png" alt="SSR"/>, is the sum of the
+squared differences between the <em>Yhat</em> values
+and the sample mean of the <em>Y</em> values.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># SSR: deviations of Yhat&#39;s around </span>
+<span class="c1"># the horizontal line for the mean</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> Y<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>Y.lm<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>h<span class="o">=</span>m<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">21</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   points<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> p<span class="p">[</span>i<span class="p">],</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+<span class="o">+</span>   points<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> m<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">)</span>
+<span class="o">+</span>   lines<span class="p">(</span>c<span class="p">(</span>X<span class="p">[</span>i<span class="p">],</span> X<span class="p">[</span>i<span class="p">]),</span> c<span class="p">(</span>m<span class="p">,</span> p<span class="p">[</span>i<span class="p">]))</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<img alt="_images/9c1c0f0d92.png" src="_images/9c1c0f0d92.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> rm<span class="p">(</span>Y<span class="p">)</span>
+<span class="o">&gt;</span> rm<span class="p">(</span>X<span class="p">)</span>
+<span class="o">&gt;</span> search<span class="p">()</span>
+ <span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="s">&quot;.GlobalEnv&quot;</span>        <span class="s">&quot;package:leaps&quot;</span>     <span class="s">&quot;package:MASS&quot;</span>     
+ <span class="p">[</span><span class="m">4</span><span class="p">]</span> <span class="s">&quot;package:lars&quot;</span>      <span class="s">&quot;kidney.table&quot;</span>      <span class="s">&quot;rehab.table&quot;</span>      
+ <span class="p">[</span><span class="m">7</span><span class="p">]</span> <span class="s">&quot;minority.table&quot;</span>    <span class="s">&quot;races.table&quot;</span>       <span class="s">&quot;package:car&quot;</span>      
+<span class="p">[</span><span class="m">10</span><span class="p">]</span> <span class="s">&quot;expenditure.table&quot;</span> <span class="s">&quot;package:stats&quot;</span>     <span class="s">&quot;package:graphics&quot;</span> 
+<span class="p">[</span><span class="m">13</span><span class="p">]</span> <span class="s">&quot;package:grDevices&quot;</span> <span class="s">&quot;package:utils&quot;</span>     <span class="s">&quot;package:datasets&quot;</span> 
+<span class="p">[</span><span class="m">16</span><span class="p">]</span> <span class="s">&quot;package:methods&quot;</span>   <span class="s">&quot;Autoloads&quot;</span>         <span class="s">&quot;package:base&quot;</span>     
+</pre></div>
+</div>
+<div class="section" id="definition-of">
+<h3>Definition of <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/><a class="headerlink" href="#definition-of" title="Permalink to this headline">¶</a></h3>
+<p>If the regression model fits very well, this sum
+of squares will be large relative to the
+total sum of squares. The <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> is just
+the ratio of these sums of squares.</p>
+<div class="math">
+<p><img src="_images/math/47c11e742cac79e3015b2566ebe20851f4b63970.png" alt="R^2 = \frac{SSR}{SST}" /></p>
+</div><p>The <img class="math" src="_images/math/62623d70eaa11458b42450ab31277cc88f4dbd6b.png" alt="R^2"/> is also closely related to the
+<em>F</em> statistic reported as the goodness
+of fit in <em>lm</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/heights.table&#39;</span>
+<span class="o">&gt;</span> heights.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>heights.table<span class="p">)</span>
+
+<span class="o">&gt;</span> wife.lm <span class="o">&lt;-</span> lm<span class="p">(</span>WIFE ~ HUSBAND<span class="p">)</span>
+
+<span class="c1"># Sums of squares</span>
+
+<span class="o">&gt;</span> SSE <span class="o">&lt;-</span> sum<span class="p">(</span>resid<span class="p">(</span>wife.lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> SST <span class="o">&lt;-</span> sum<span class="p">((</span>WIFE <span class="o">-</span> mean<span class="p">(</span>WIFE<span class="p">))</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> SSR <span class="o">&lt;-</span> sum<span class="p">((</span>mean<span class="p">(</span>WIFE<span class="p">)</span> <span class="o">-</span> predict<span class="p">(</span>wife.lm<span class="p">))</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+
+<span class="o">&gt;</span> c<span class="p">(</span>SST<span class="p">,</span> SSE<span class="o">+</span>SSR<span class="p">)</span> <span class="c1"># verify that SST=SSE+SSR</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">7792.358</span> <span class="m">7792.358</span>
+
+<span class="o">&gt;</span> <span class="k-Variable">F</span> <span class="o">&lt;-</span> <span class="p">(</span>SSR <span class="o">/</span> <span class="m">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>SSE<span class="o">/</span>wife.lm<span class="p">$</span>df<span class="p">)</span>
+</pre></div>
+</div>
+<p><em>F</em>-statistics, when they have 1 degree of freedom
+in the denominator, can usually be thought of as
+the square of a <em>t</em>-statistic.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># sqrt(F) should be the (absolute) value of</span>
+<span class="c1"># the t-statistic testing HUSBAND=0 in the summary</span>
+<span class="o">&gt;</span> <span class="k-Variable">F</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">126.9727</span>
+<span class="o">&gt;</span> sqrt<span class="p">(</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">11.26821</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>wife.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> WIFE ~ HUSBAND<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-19.4235</span>  <span class="m">-3.9438</span>   <span class="m">0.8399</span>   <span class="m">4.0123</span>  <span class="m">11.1439</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">42.54871</span>   <span class="m">10.77592</span>   <span class="m">3.949</span> <span class="m">0.000153</span> <span class="o">***</span>
+HUSBAND      <span class="m">0.69593</span>    <span class="m">0.06176</span>  <span class="m">11.268</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">5.952</span> on <span class="m">93</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.5772</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.5727</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:   <span class="m">127</span> on <span class="m">1</span> and <span class="m">93</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+
+<span class="o">&gt;</span> detach<span class="p">(</span>heights.table<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="poorly-fitting-linear-model">
+<h2>Poorly fitting linear model<a class="headerlink" href="#poorly-fitting-linear-model" title="Permalink to this headline">¶</a></h2>
+<p>Plots of residuals against covariates can sometimes
+reveal missing nonlinear terms in a regression model.
+In this example, the true mean is quadratic
+and we try to use some diagnostic plots based
+on residuals to &#8220;discover&#8221; this.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&quot;http://stats191.stanford.edu/data/anscombe.table&quot;</span>
+<span class="o">&gt;</span> anscombe <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+<span class="c1"># Another little R tip...</span>
+<span class="c1"># If you don&#39;t attach a file, you need </span>
+<span class="c1"># to use &quot;$&quot; notation to get the variables</span>
+
+<span class="c1"># Add some noise because the curve is almost quadratic already</span>
+<span class="o">&gt;</span> anscombe<span class="p">$</span>Y2 <span class="o">=</span> anscombe<span class="p">$</span>Y2 <span class="o">+</span> rnorm<span class="p">(</span>length<span class="p">(</span>anscombe<span class="p">$</span>Y2<span class="p">))</span> <span class="o">*</span> <span class="m">0.45</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>anscombe<span class="p">$</span>X2<span class="p">,</span> anscombe<span class="p">$</span>Y2<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Y&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
+
+<span class="c1"># Let&#39;s attach it now</span>
+
+<span class="o">&gt;</span> attach<span class="p">(</span>anscombe<span class="p">)</span>
+
+	The following object<span class="p">(</span>s<span class="p">)</span> are masked _by_ <span class="m">.</span>GlobalEnv :
+
+	 X2 
+
+<span class="o">&gt;</span> simple.lm <span class="o">&lt;-</span> lm<span class="p">(</span>Y2 ~ X2<span class="p">)</span>
+Error in model.frame.default<span class="p">(</span>formula <span class="o">=</span> Y2 ~ X2<span class="p">,</span> drop.unused.levels <span class="o">=</span> <span class="kc">TRUE</span><span class="p">)</span> : 
+  variable lengths differ <span class="p">(</span>found for <span class="s">&#39;X2&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;</span> abline<span class="p">(</span>simple.lm<span class="p">$</span>coef<span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+Error in abline<span class="p">(</span>simple.lm<span class="p">$</span>coef<span class="p">,</span> lwd <span class="o">=</span> <span class="m">2</span><span class="p">,</span> col <span class="o">=</span> <span class="s">&quot;red&quot;</span><span class="p">,</span> lty <span class="o">=</span> <span class="m">2</span><span class="p">)</span> : 
+  object <span class="s">&#39;simple.lm&#39;</span> not found
+</pre></div>
+</div>
+<img alt="_images/62c8cf1836.png" src="_images/62c8cf1836.png" />
+<p>If we plot the residuals against <em>X</em>, we see a clear pattern
+(in fact, a quadratic). Patterns in these residual plots
+may suggest something like a quadratic effect is missing, but
+they can also suggest some sort of serial dependence in the
+random errors. We will discuss this later, see
+<a class="reference external" href="correlated_errors.html#correlated-errors"><em>Correlated errors</em></a>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>X2<span class="p">,</span> resid<span class="p">(</span>simple.lm<span class="p">),</span> ylab<span class="o">=</span><span class="s">&#39;Residual&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;X&#39;</span><span class="p">,</span> 
+<span class="o">+</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+Error in resid<span class="p">(</span>simple.lm<span class="p">)</span> : object <span class="s">&#39;simple.lm&#39;</span> not found
+
+<span class="c1">## put a horizontal line through 0</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>h<span class="o">=</span><span class="m">0</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>   
+Error in int_abline<span class="p">(</span>a <span class="o">=</span> a<span class="p">,</span> b <span class="o">=</span> b<span class="p">,</span> h <span class="o">=</span> h<span class="p">,</span> v <span class="o">=</span> v<span class="p">,</span> untf <span class="o">=</span> untf<span class="p">,</span> <span class="m">...</span><span class="p">)</span> : 
+  plot.new has not been called yet
+</pre></div>
+</div>
+<img alt="_images/ee875620c4.png" src="_images/ee875620c4.png" />
+<p>Next, we add a quadratic term to the model, using the function
+<em>poly</em> which adds a polynomial trend of a given degree to a model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Improve model by adding quadratic term</span>
+
+<span class="o">&gt;</span> quadratic.lm <span class="o">&lt;-</span> lm<span class="p">(</span>Y2 ~ poly<span class="p">(</span>X2<span class="p">,</span> <span class="m">2</span><span class="p">))</span>
+Error in poly<span class="p">(</span>X2<span class="p">,</span> <span class="m">2</span><span class="p">)</span> : <span class="s">&#39;degree&#39;</span> must be less than number of unique points
+
+<span class="c1"># Replot data, adding fitted quadratic</span>
+<span class="o">&gt;</span> Xsort <span class="o">&lt;-</span> sort<span class="p">(</span>X2<span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>X2<span class="p">,</span> Y2<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Y&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
+Error in xy.coords<span class="p">(</span>x<span class="p">,</span> y<span class="p">,</span> xlabel<span class="p">,</span> ylabel<span class="p">,</span> log<span class="p">)</span> : 
+  <span class="s">&#39;x&#39;</span> and <span class="s">&#39;y&#39;</span> lengths differ
+<span class="o">&gt;</span> lines<span class="p">(</span>Xsort<span class="p">,</span> predict<span class="p">(</span>quadratic.lm<span class="p">,</span> list<span class="p">(</span>X2<span class="o">=</span>Xsort<span class="p">)),</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+Error in predict<span class="p">(</span>quadratic.lm<span class="p">,</span> list<span class="p">(</span>X2 <span class="o">=</span> Xsort<span class="p">))</span> : 
+  object <span class="s">&#39;quadratic.lm&#39;</span> not found
+</pre></div>
+</div>
+<img alt="_images/e05aee4f1c.png" src="_images/e05aee4f1c.png" />
+<p>The residuals of the quadratic model have no apparent pattern in them,
+suggesting this is a better fit than the simple linear regression model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>X2<span class="p">,</span> resid<span class="p">(</span>quadratic.lm<span class="p">),</span> ylab<span class="o">=</span><span class="s">&#39;Residual&#39;</span><span class="p">,</span>
+<span class="o">+</span>      xlab<span class="o">=</span><span class="s">&#39;X&#39;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+Error in resid<span class="p">(</span>quadratic.lm<span class="p">)</span> : object <span class="s">&#39;quadratic.lm&#39;</span> not found
+<span class="c1">## put a horizontal line through 0</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>h<span class="o">=</span><span class="m">0</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>   
+Error in int_abline<span class="p">(</span>a <span class="o">=</span> a<span class="p">,</span> b <span class="o">=</span> b<span class="p">,</span> h <span class="o">=</span> h<span class="p">,</span> v <span class="o">=</span> v<span class="p">,</span> untf <span class="o">=</span> untf<span class="p">,</span> <span class="m">...</span><span class="p">)</span> : 
+  plot.new has not been called yet
+
+
+<span class="o">&gt;</span> detach<span class="p">(</span>anscombe<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/530e48a8aa.png" src="_images/530e48a8aa.png" />
+<p>Another common diagnostic plot is the <em>qqplot</em> where <em>qq</em> stands for
+<em>Quantile-Quantile</em>. Roughly speaking, a <em>qqplot</em> tries to see
+if the quantiles of two distributions match. The function <em>qqnorm</em>
+can be used to ascertain if a sample of numbers are roughly normally
+distributed. If the points lie on the diagonal line, this is
+evidence that the sample is normally distributed. Various departures
+from the diagonal indicate skewness, asymmetry, etc.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> qqnorm<span class="p">(</span>resid<span class="p">(</span>simple.lm<span class="p">),</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+Error in resid<span class="p">(</span>simple.lm<span class="p">)</span> : object <span class="s">&#39;simple.lm&#39;</span> not found
+</pre></div>
+</div>
+<img alt="_images/d2641c1df6.png" src="_images/d2641c1df6.png" />
+<p>In these two examples, the qqplot does not seem vastly different, even
+though we know the simple model is incorrect in this case. This indicates
+that several diagnostic tools should be used in assessing a model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> qqnorm<span class="p">(</span>resid<span class="p">(</span>quadratic.lm<span class="p">),</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+Error in resid<span class="p">(</span>quadratic.lm<span class="p">)</span> : object <span class="s">&#39;quadratic.lm&#39;</span> not found
+<span class="o">&gt;</span> detach<span class="p">(</span>anscombe<span class="p">)</span>
+Error in detach<span class="p">(</span>anscombe<span class="p">)</span> : invalid name
+</pre></div>
+</div>
+<img alt="_images/d7851c5345.png" src="_images/d7851c5345.png" />
+</div>
+<div class="section" id="outlier-and-nonconstant-variance">
+<h2>Outlier and nonconstant variance<a class="headerlink" href="#outlier-and-nonconstant-variance" title="Permalink to this headline">¶</a></h2>
+<p>One of our assumptions is that the variance is constant, that
+is, the spread of the residuals around the fitted line is roughly
+the same at each value of the covariate. This dataset below,
+taken from some work done with Dr. Robert Shafer here at Stanford
+<a class="reference external" href="http://hivdb.stanford.edu">http://hivdb.stanford.edu</a>,
+plots HIV virus load against a score related to the
+the genetic makeup of a patient&#8217;s virus shows clear non-constant variance.
+It also provides a clear example of an outlier, or a
+point that is a clear departure from the model.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/HIV.VL.table&#39;</span>
+
+<span class="o">&gt;</span> viral.load <span class="o">=</span> read.table<span class="p">(</span>dataurl<span class="p">(</span><span class="s">&#39;HIV.VL.table&#39;</span><span class="p">),</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>viral.load<span class="p">)</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>GSS<span class="p">,</span> VL<span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">&gt;</span> viral.lm <span class="o">=</span> lm<span class="p">(</span>VL ~ GSS<span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>viral.lm<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+
+<span class="c1">## let&#39;s remove the outlier</span>
+<span class="o">&gt;</span> good <span class="o">=</span> <span class="p">(</span>VL <span class="o">&lt;</span> <span class="m">250000</span><span class="p">)</span>
+<span class="o">&gt;</span> viral.lm <span class="o">=</span> lm<span class="p">(</span>VL ~ GSS<span class="p">,</span> subset<span class="o">=</span>good<span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>viral.lm<span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/2d308dcc06.png" src="_images/2d308dcc06.png" />
+<p>Plotting residuals against GSS shows a clear &#8220;fan&#8221; pattern,
+which suggests that the variance of the errors grows
+with GSS. This can sometimes be modelled, and corrected
+for, using weighted regression.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> plot<span class="p">(</span>GSS<span class="p">[</span>good<span class="p">],</span> resid<span class="p">(</span>viral.lm<span class="p">),</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>
+<span class="o">+</span> bg<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;GSS&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Residual&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>h<span class="o">=</span><span class="m">0</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lty<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/0824cf9384.png" src="_images/0824cf9384.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="multiple.html" title="Multiple linear regression model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="simple.html" title="Simple linear regression"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

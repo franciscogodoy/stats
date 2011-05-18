@@ -1,0 +1,997 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Interactions & ANOVA &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Transformations & Weighted Least Squares" href="transformations.html" />
+    <link rel="prev" title="Diagnostics and influence" href="diagnostics.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="transformations.html" title="Transformations & Weighted Least Squares"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="diagnostics.html" title="Diagnostics and influence"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Interactions &amp; ANOVA</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#salary-example">Salary example</a></li>
+<li><a class="reference external" href="#minority-employment-data">Minority employment data</a><ul>
+<li><a class="reference external" href="#model-1">Model 1</a></li>
+<li><a class="reference external" href="#model-2">Model 2</a></li>
+<li><a class="reference external" href="#model-3">Model 3</a></li>
+<li><a class="reference external" href="#model-4">Model 4</a></li>
+<li><a class="reference external" href="#comparing-models">Comparing models</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#one-way-anova">One-way ANOVA</a></li>
+<li><a class="reference external" href="#two-way-anova">Two-way ANOVA</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="diagnostics.html"
+                                  title="previous chapter">Diagnostics and influence</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="transformations.html"
+                                  title="next chapter">Transformations &amp; Weighted Least Squares</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/interactions.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="interactions-anova">
+<span id="interactions"></span><h1>Interactions &amp; ANOVA<a class="headerlink" href="#interactions-anova" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/interactions.pdf">here</a>.</p>
+</div>
+<div class="section" id="salary-example">
+<h2>Salary example<a class="headerlink" href="#salary-example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/salary.table&#39;</span>
+
+<span class="o">&gt;</span> salary.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> salary.table<span class="p">$</span>E <span class="o">&lt;-</span> factor<span class="p">(</span>salary.table<span class="p">$</span>E<span class="p">)</span>
+<span class="o">&gt;</span> salary.table<span class="p">$</span>M <span class="o">&lt;-</span> factor<span class="p">(</span>salary.table<span class="p">$</span>M<span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>salary.table<span class="p">)</span>
+</pre></div>
+</div>
+<p>Let&#8217;s take a look at the data</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># triangles for management, diamonds for non-management</span>
+<span class="c1"># red for education=0, green for education=1, blue for education=2</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span>S<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Experience&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Salary&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> colors <span class="o">&lt;-</span> c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="s">&#39;green&#39;</span><span class="p">,</span> <span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> symbols <span class="o">&lt;-</span> c<span class="p">(</span><span class="m">23</span><span class="p">,</span><span class="m">24</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">3</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">0</span>:<span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>     subset <span class="o">&lt;-</span> as.logical<span class="p">((</span>E <span class="o">==</span> i<span class="p">)</span> <span class="o">*</span> <span class="p">(</span>M <span class="o">==</span> j<span class="p">))</span>
+<span class="o">+</span>     points<span class="p">(</span>X<span class="p">[</span>subset<span class="p">],</span> S<span class="p">[</span>subset<span class="p">],</span> pch<span class="o">=</span>symbols<span class="p">[</span>j<span class="o">+</span><span class="m">1</span><span class="p">],</span> bg<span class="o">=</span>colors<span class="p">[</span>i<span class="p">],</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<img alt="_images/9e01e86655.png" src="_images/9e01e86655.png" />
+<p>Fit a linear model</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> salary.lm <span class="o">&lt;-</span> lm<span class="p">(</span>S ~ E <span class="o">+</span> M <span class="o">+</span> X<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>salary.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> S ~ E <span class="o">+</span> M <span class="o">+</span> X<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-1884.60</span>  <span class="m">-653.60</span>    <span class="m">22.23</span>   <span class="m">844.85</span>  <span class="m">1716.47</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">8035.60</span>     <span class="m">386.69</span>  <span class="m">20.781</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2           <span class="m">3144.04</span>     <span class="m">361.97</span>   <span class="m">8.686</span> <span class="m">7.73</span>e<span class="o">-</span><span class="m">11</span> <span class="o">***</span>
+E3           <span class="m">2996.21</span>     <span class="m">411.75</span>   <span class="m">7.277</span> <span class="m">6.72</span>e<span class="o">-</span><span class="m">09</span> <span class="o">***</span>
+M1           <span class="m">6883.53</span>     <span class="m">313.92</span>  <span class="m">21.928</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+X             <span class="m">546.18</span>      <span class="m">30.52</span>  <span class="m">17.896</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1027</span> on <span class="m">41</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9568</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9525</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">226.8</span> on <span class="m">4</span> and <span class="m">41</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+
+<span class="c1"># the design matrix</span>
+<span class="o">&gt;</span> model.matrix<span class="p">(</span>salary.lm<span class="p">)[</span><span class="m">1</span>:<span class="m">20</span><span class="p">,]</span>
+   <span class="p">(</span>Intercept<span class="p">)</span> E2 E3 M1 X
+<span class="m">1</span>            <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">1</span> <span class="m">1</span>
+<span class="m">2</span>            <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span> <span class="m">1</span>
+<span class="m">3</span>            <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">1</span> <span class="m">1</span>
+<span class="m">4</span>            <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">1</span>
+<span class="m">5</span>            <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span> <span class="m">1</span>
+<span class="m">6</span>            <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span> <span class="m">2</span>
+<span class="m">7</span>            <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">2</span>
+<span class="m">8</span>            <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">2</span>
+<span class="m">9</span>            <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span> <span class="m">2</span>
+<span class="m">10</span>           <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">3</span>
+<span class="m">11</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">1</span> <span class="m">3</span>
+<span class="m">12</span>           <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span> <span class="m">3</span>
+<span class="m">13</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">1</span> <span class="m">3</span>
+<span class="m">14</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">4</span>
+<span class="m">15</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">1</span> <span class="m">4</span>
+<span class="m">16</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span> <span class="m">4</span>
+<span class="m">17</span>           <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">4</span>
+<span class="m">18</span>           <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span> <span class="m">5</span>
+<span class="m">19</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span> <span class="m">5</span>
+<span class="m">20</span>           <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">1</span> <span class="m">5</span>
+
+<span class="c1"># the data frame it was based on</span>
+<span class="c1"># we see the 0-1 coding of factors in</span>
+<span class="c1"># the design matrix</span>
+<span class="o">&gt;</span> model.frame<span class="p">(</span>salary.lm<span class="p">)[</span><span class="m">1</span>:<span class="m">20</span><span class="p">,]</span>
+       S E M X
+<span class="m">1</span>  <span class="m">13876</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span>
+<span class="m">2</span>  <span class="m">11608</span> <span class="m">3</span> <span class="m">0</span> <span class="m">1</span>
+<span class="m">3</span>  <span class="m">18701</span> <span class="m">3</span> <span class="m">1</span> <span class="m">1</span>
+<span class="m">4</span>  <span class="m">11283</span> <span class="m">2</span> <span class="m">0</span> <span class="m">1</span>
+<span class="m">5</span>  <span class="m">11767</span> <span class="m">3</span> <span class="m">0</span> <span class="m">1</span>
+<span class="m">6</span>  <span class="m">20872</span> <span class="m">2</span> <span class="m">1</span> <span class="m">2</span>
+<span class="m">7</span>  <span class="m">11772</span> <span class="m">2</span> <span class="m">0</span> <span class="m">2</span>
+<span class="m">8</span>  <span class="m">10535</span> <span class="m">1</span> <span class="m">0</span> <span class="m">2</span>
+<span class="m">9</span>  <span class="m">12195</span> <span class="m">3</span> <span class="m">0</span> <span class="m">2</span>
+<span class="m">10</span> <span class="m">12313</span> <span class="m">2</span> <span class="m">0</span> <span class="m">3</span>
+<span class="m">11</span> <span class="m">14975</span> <span class="m">1</span> <span class="m">1</span> <span class="m">3</span>
+<span class="m">12</span> <span class="m">21371</span> <span class="m">2</span> <span class="m">1</span> <span class="m">3</span>
+<span class="m">13</span> <span class="m">19800</span> <span class="m">3</span> <span class="m">1</span> <span class="m">3</span>
+<span class="m">14</span> <span class="m">11417</span> <span class="m">1</span> <span class="m">0</span> <span class="m">4</span>
+<span class="m">15</span> <span class="m">20263</span> <span class="m">3</span> <span class="m">1</span> <span class="m">4</span>
+<span class="m">16</span> <span class="m">13231</span> <span class="m">3</span> <span class="m">0</span> <span class="m">4</span>
+<span class="m">17</span> <span class="m">12884</span> <span class="m">2</span> <span class="m">0</span> <span class="m">4</span>
+<span class="m">18</span> <span class="m">13245</span> <span class="m">2</span> <span class="m">0</span> <span class="m">5</span>
+<span class="m">19</span> <span class="m">13677</span> <span class="m">3</span> <span class="m">0</span> <span class="m">5</span>
+<span class="m">20</span> <span class="m">15965</span> <span class="m">1</span> <span class="m">1</span> <span class="m">5</span>
+
+<span class="o">&gt;</span> library<span class="p">(</span>car<span class="p">)</span>
+<span class="o">&gt;</span> influence.measures<span class="p">(</span>salary.lm<span class="p">)</span>
+Influence measures of
+	 lm<span class="p">(</span>formula <span class="o">=</span> S ~ E <span class="o">+</span> M <span class="o">+</span> X<span class="p">)</span> :
+
+      dfb.1_    dfb.E2   dfb.E3   dfb.M1     dfb.X   dffit cov.r   cook.d
+<span class="m">1</span>  <span class="m">-0.505123</span>  <span class="m">3.76</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">0.48398</span> <span class="m">-0.36968</span>  <span class="m">0.399111</span> <span class="m">-0.7389</span> <span class="m">0.936</span> <span class="m">1.04</span>e<span class="o">-</span><span class="m">01</span>
+<span class="m">2</span>   <span class="m">0.004663</span>  <span class="m">1.45</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">0.00673</span> <span class="m">-0.00622</span> <span class="m">-0.004449</span>  <span class="m">0.0120</span> <span class="m">1.301</span> <span class="m">2.94</span>e<span class="o">-</span><span class="m">05</span>
+<span class="m">3</span>   <span class="m">0.013627</span>  <span class="m">3.67</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">0.03688</span>  <span class="m">0.03051</span> <span class="m">-0.034970</span>  <span class="m">0.0854</span> <span class="m">1.260</span> <span class="m">1.49</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">4</span>  <span class="m">-0.083152</span> <span class="m">-7.44</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">0.00970</span>  <span class="m">0.05378</span>  <span class="m">0.105122</span> <span class="m">-0.1618</span> <span class="m">1.243</span> <span class="m">5.34</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">5</span>   <span class="m">0.029382</span>  <span class="m">9.17</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">0.04243</span> <span class="m">-0.03920</span> <span class="m">-0.028036</span>  <span class="m">0.0754</span> <span class="m">1.295</span> <span class="m">1.17</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">6</span>   <span class="m">0.129507</span>  <span class="m">2.97</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.14701</span>  <span class="m">0.38072</span> <span class="m">-0.373271</span>  <span class="m">0.6976</span> <span class="m">0.863</span> <span class="m">9.20</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">7</span>  <span class="m">-0.082466</span> <span class="m">-8.26</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">0.00773</span>  <span class="m">0.06001</span>  <span class="m">0.101245</span> <span class="m">-0.1704</span> <span class="m">1.219</span> <span class="m">5.91</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">8</span>   <span class="m">0.531802</span> <span class="m">-3.12</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.30191</span> <span class="m">-0.17052</span> <span class="m">-0.286262</span>  <span class="m">0.5366</span> <span class="m">0.982</span> <span class="m">5.60</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">9</span>   <span class="m">0.009437</span>  <span class="m">2.97</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">0.01621</span> <span class="m">-0.01457</span> <span class="m">-0.008109</span>  <span class="m">0.0273</span> <span class="m">1.290</span> <span class="m">1.52</span>e<span class="o">-</span><span class="m">04</span>
+<span class="m">10</span> <span class="m">-0.072165</span> <span class="m">-8.23</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">0.00464</span>  <span class="m">0.06000</span>  <span class="m">0.085220</span> <span class="m">-0.1613</span> <span class="m">1.204</span> <span class="m">5.30</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">11</span> <span class="m">-0.420485</span>  <span class="m">3.67</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">0.44835</span> <span class="m">-0.35805</span>  <span class="m">0.278991</span> <span class="m">-0.6643</span> <span class="m">0.924</span> <span class="m">8.44</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">12</span>  <span class="m">0.088213</span>  <span class="m">2.84</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.13006</span>  <span class="m">0.36469</span> <span class="m">-0.301787</span>  <span class="m">0.6404</span> <span class="m">0.877</span> <span class="m">7.80</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">13</span>  <span class="m">0.003822</span>  <span class="m">7.60</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">0.04039</span>  <span class="m">0.03087</span> <span class="m">-0.019872</span>  <span class="m">0.0814</span> <span class="m">1.243</span> <span class="m">1.36</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">14</span>  <span class="m">0.390174</span> <span class="m">-2.59</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.23468</span> <span class="m">-0.14128</span> <span class="m">-0.159468</span>  <span class="m">0.4078</span> <span class="m">1.041</span> <span class="m">3.28</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">15</span> <span class="m">-0.000773</span> <span class="m">-4.73</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">0.02761</span>  <span class="m">0.02033</span> <span class="m">-0.007967</span>  <span class="m">0.0526</span> <span class="m">1.243</span> <span class="m">5.68</span>e<span class="o">-</span><span class="m">04</span>
+<span class="m">16</span>  <span class="m">0.001309</span>  <span class="m">4.23</span>e<span class="o">-</span><span class="m">05</span>  <span class="m">0.00346</span> <span class="m">-0.00295</span> <span class="m">-0.000706</span>  <span class="m">0.0053</span> <span class="m">1.277</span> <span class="m">5.77</span>e<span class="o">-</span><span class="m">06</span>
+<span class="m">17</span> <span class="m">-0.058341</span> <span class="m">-7.72</span>e<span class="o">-</span><span class="m">02</span>  <span class="m">0.00146</span>  <span class="m">0.05656</span>  <span class="m">0.065264</span> <span class="m">-0.1445</span> <span class="m">1.197</span> <span class="m">4.26</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">18</span> <span class="m">-0.067190</span> <span class="m">-1.06</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.00199</span>  <span class="m">0.07806</span>  <span class="m">0.069330</span> <span class="m">-0.1908</span> <span class="m">1.157</span> <span class="m">7.38</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">19</span> <span class="m">-0.005975</span> <span class="m">-1.98</span>e<span class="o">-</span><span class="m">04</span> <span class="m">-0.02099</span>  <span class="m">0.01746</span>  <span class="m">0.001422</span> <span class="m">-0.0312</span> <span class="m">1.274</span> <span class="m">1.99</span>e<span class="o">-</span><span class="m">04</span>
+<span class="m">20</span> <span class="m">-0.369186</span>  <span class="m">3.88</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">0.44932</span> <span class="m">-0.37599</span>  <span class="m">0.179758</span> <span class="m">-0.6588</span> <span class="m">0.872</span> <span class="m">8.24</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">21</span>  <span class="m">0.286238</span> <span class="m">-2.19</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.18463</span> <span class="m">-0.11896</span> <span class="m">-0.069106</span>  <span class="m">0.3229</span> <span class="m">1.084</span> <span class="m">2.08</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">22</span> <span class="m">-0.007189</span> <span class="m">-2.37</span>e<span class="o">-</span><span class="m">04</span>  <span class="m">0.02893</span>  <span class="m">0.01983</span>  <span class="m">0.002242</span>  <span class="m">0.0509</span> <span class="m">1.241</span> <span class="m">5.31</span>e<span class="o">-</span><span class="m">04</span>
+<span class="m">23</span> <span class="m">-0.049744</span> <span class="m">-9.74</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.00553</span>  <span class="m">0.07208</span>  <span class="m">0.044887</span> <span class="m">-0.1700</span> <span class="m">1.160</span> <span class="m">5.87</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">24</span> <span class="m">-0.017529</span>  <span class="m">2.52</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.08757</span>  <span class="m">0.32693</span> <span class="m">-0.120217</span>  <span class="m">0.5213</span> <span class="m">0.913</span> <span class="m">5.23</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">25</span> <span class="m">-0.308716</span>  <span class="m">4.06</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">0.44516</span> <span class="m">-0.39125</span>  <span class="m">0.068996</span> <span class="m">-0.6639</span> <span class="m">0.835</span> <span class="m">8.30</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">26</span> <span class="m">-0.030446</span> <span class="m">-1.16</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.01555</span>  <span class="m">0.08696</span>  <span class="m">0.008142</span> <span class="m">-0.1977</span> <span class="m">1.130</span> <span class="m">7.90</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">27</span> <span class="m">-0.290625</span>  <span class="m">4.37</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">0.46550</span> <span class="m">-0.41971</span>  <span class="m">0.010587</span> <span class="m">-0.7088</span> <span class="m">0.784</span> <span class="m">9.35</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">28</span>  <span class="m">0.008654</span>  <span class="m">2.71</span>e<span class="o">-</span><span class="m">04</span> <span class="m">-0.01961</span> <span class="m">-0.01257</span> <span class="m">-0.007794</span> <span class="m">-0.0332</span> <span class="m">1.250</span> <span class="m">2.26</span>e<span class="o">-</span><span class="m">04</span>
+<span class="m">29</span>  <span class="m">0.272903</span> <span class="m">-2.46</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.19197</span> <span class="m">-0.13299</span> <span class="m">-0.004691</span>  <span class="m">0.3519</span> <span class="m">1.044</span> <span class="m">2.46</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">30</span>  <span class="m">0.191834</span> <span class="m">-2.09</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.15075</span> <span class="m">-0.11289</span>  <span class="m">0.057372</span>  <span class="m">0.3036</span> <span class="m">1.098</span> <span class="m">1.84</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">31</span> <span class="m">-0.000928</span> <span class="m">-1.09</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.02295</span>  <span class="m">0.08181</span> <span class="m">-0.035466</span> <span class="m">-0.1888</span> <span class="m">1.142</span> <span class="m">7.22</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">32</span>  <span class="m">0.026040</span>  <span class="m">8.01</span>e<span class="o">-</span><span class="m">04</span> <span class="m">-0.04260</span> <span class="m">-0.02565</span> <span class="m">-0.028948</span> <span class="m">-0.0721</span> <span class="m">1.262</span> <span class="m">1.06</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">33</span> <span class="m">-0.023402</span>  <span class="m">3.96</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.00777</span>  <span class="m">0.05210</span>  <span class="m">0.012909</span>  <span class="m">0.0820</span> <span class="m">1.236</span> <span class="m">1.38</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">34</span> <span class="m">-0.153971</span>  <span class="m">2.13</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.03349</span>  <span class="m">0.28081</span>  <span class="m">0.112898</span>  <span class="m">0.4512</span> <span class="m">0.990</span> <span class="m">3.98</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">35</span>  <span class="m">0.145294</span> <span class="m">-1.77</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.12221</span> <span class="m">-0.09537</span>  <span class="m">0.074309</span>  <span class="m">0.2623</span> <span class="m">1.142</span> <span class="m">1.39</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">36</span>  <span class="m">0.032987</span> <span class="m">-1.33</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.03863</span>  <span class="m">0.10115</span> <span class="m">-0.096958</span> <span class="m">-0.2485</span> <span class="m">1.118</span> <span class="m">1.24</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">37</span>  <span class="m">0.051857</span>  <span class="m">1.58</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.06804</span> <span class="m">-0.03860</span> <span class="m">-0.063277</span> <span class="m">-0.1179</span> <span class="m">1.281</span> <span class="m">2.84</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">38</span>  <span class="m">0.118995</span> <span class="m">-1.89</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.11911</span> <span class="m">-0.10145</span>  <span class="m">0.133868</span>  <span class="m">0.2988</span> <span class="m">1.149</span> <span class="m">1.80</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">39</span> <span class="m">-0.184139</span>  <span class="m">1.86</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.01469</span>  <span class="m">0.24651</span>  <span class="m">0.175310</span>  <span class="m">0.4221</span> <span class="m">1.061</span> <span class="m">3.52</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">40</span>  <span class="m">0.070419</span> <span class="m">-1.38</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.05134</span>  <span class="m">0.10632</span> <span class="m">-0.157539</span> <span class="m">-0.2871</span> <span class="m">1.130</span> <span class="m">1.66</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">41</span>  <span class="m">0.105129</span>  <span class="m">3.18</span>e<span class="o">-</span><span class="m">03</span> <span class="m">-0.10958</span> <span class="m">-0.05720</span> <span class="m">-0.137778</span> <span class="m">-0.2021</span> <span class="m">1.329</span> <span class="m">8.33</span>e<span class="o">-</span><span class="m">03</span>
+<span class="m">42</span> <span class="m">-0.236148</span>  <span class="m">1.68</span>e<span class="o">-</span><span class="m">01</span>  <span class="m">0.00681</span>  <span class="m">0.22581</span>  <span class="m">0.265578</span>  <span class="m">0.4412</span> <span class="m">1.138</span> <span class="m">3.88</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">43</span>  <span class="m">0.135088</span> <span class="m">-1.75</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.07904</span>  <span class="m">0.13546</span> <span class="m">-0.271310</span> <span class="m">-0.4084</span> <span class="m">1.097</span> <span class="m">3.32</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">44</span>  <span class="m">0.056815</span> <span class="m">-1.64</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.08866</span> <span class="m">-0.08747</span>  <span class="m">0.185970</span>  <span class="m">0.2955</span> <span class="m">1.227</span> <span class="m">1.77</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">45</span>  <span class="m">0.187902</span> <span class="m">-2.07</span>e<span class="o">-</span><span class="m">01</span> <span class="m">-0.10227</span>  <span class="m">0.16140</span> <span class="m">-0.365189</span> <span class="m">-0.5152</span> <span class="m">1.050</span> <span class="m">5.21</span>e<span class="o">-</span><span class="m">02</span>
+<span class="m">46</span> <span class="m">-0.002263</span> <span class="m">-9.80</span>e<span class="o">-</span><span class="m">02</span> <span class="m">-0.04159</span> <span class="m">-0.05191</span>  <span class="m">0.165808</span>  <span class="m">0.2143</span> <span class="m">1.397</span> <span class="m">9.37</span>e<span class="o">-</span><span class="m">03</span>
+      hat inf
+<span class="m">1</span>  <span class="m">0.1553</span>    
+<span class="m">2</span>  <span class="m">0.1303</span>    
+<span class="m">3</span>  <span class="m">0.1090</span>    
+<span class="m">4</span>  <span class="m">0.1130</span>    
+<span class="m">5</span>  <span class="m">0.1303</span>    
+<span class="m">6</span>  <span class="m">0.1259</span>    
+<span class="m">7</span>  <span class="m">0.1009</span>    
+<span class="m">8</span>  <span class="m">0.1165</span>    
+<span class="m">9</span>  <span class="m">0.1232</span>    
+<span class="m">10</span> <span class="m">0.0906</span>    
+<span class="m">11</span> <span class="m">0.1336</span>    
+<span class="m">12</span> <span class="m">0.1155</span>    
+<span class="m">13</span> <span class="m">0.0965</span>    
+<span class="m">14</span> <span class="m">0.0984</span>    
+<span class="m">15</span> <span class="m">0.0929</span>    
+<span class="m">16</span> <span class="m">0.1143</span>    
+<span class="m">17</span> <span class="m">0.0820</span>    
+<span class="m">18</span> <span class="m">0.0752</span>    
+<span class="m">19</span> <span class="m">0.1125</span>    
+<span class="m">20</span> <span class="m">0.1189</span>    
+<span class="m">21</span> <span class="m">0.0873</span>    
+<span class="m">22</span> <span class="m">0.0909</span>    
+<span class="m">23</span> <span class="m">0.0702</span>    
+<span class="m">24</span> <span class="m">0.0949</span>    
+<span class="m">25</span> <span class="m">0.1112</span>    
+<span class="m">26</span> <span class="m">0.0654</span>    
+<span class="m">27</span> <span class="m">0.1100</span>    
+<span class="m">28</span> <span class="m">0.0960</span>    
+<span class="m">29</span> <span class="m">0.0834</span>    
+<span class="m">30</span> <span class="m">0.0864</span>    
+<span class="m">31</span> <span class="m">0.0677</span>    
+<span class="m">32</span> <span class="m">0.1082</span>    
+<span class="m">33</span> <span class="m">0.0922</span>    
+<span class="m">34</span> <span class="m">0.0959</span>    
+<span class="m">35</span> <span class="m">0.0906</span>    
+<span class="m">36</span> <span class="m">0.0770</span>    
+<span class="m">37</span> <span class="m">0.1274</span>    
+<span class="m">38</span> <span class="m">0.1043</span>    
+<span class="m">39</span> <span class="m">0.1086</span>    
+<span class="m">40</span> <span class="m">0.0934</span>    
+<span class="m">41</span> <span class="m">0.1695</span>    
+<span class="m">42</span> <span class="m">0.1409</span>    
+<span class="m">43</span> <span class="m">0.1169</span>    
+<span class="m">44</span> <span class="m">0.1380</span>    
+<span class="m">45</span> <span class="m">0.1312</span>    
+<span class="m">46</span> <span class="m">0.2077</span>   <span class="o">*</span>
+<span class="o">&gt;</span> outlier.test<span class="p">(</span>salary.lm<span class="p">)</span>
+
+max<span class="o">|</span>rstudent<span class="o">|</span> <span class="o">=</span> <span class="m">2.015681</span><span class="p">,</span> degrees of freedom <span class="o">=</span> <span class="m">40</span><span class="p">,</span>
+unadjusted p <span class="o">=</span> <span class="m">0.05058573</span><span class="p">,</span> Bonferroni p <span class="o">&gt;</span> <span class="m">1</span>
+
+Observation: <span class="m">27</span> 
+</pre></div>
+</div>
+<p>We will now plot the residuals within the groups separately</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> r <span class="o">=</span> resid<span class="p">(</span>salary.lm<span class="p">)</span>
+
+<span class="o">&gt;</span> k <span class="o">=</span> <span class="m">1</span>
+
+<span class="c1"># this type gives an empty plotting window &#39;n&#39; for &#39;none&#39;</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> r<span class="p">,</span> xlim<span class="o">=</span>c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">6</span><span class="p">),</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Group&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Residuals&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">3</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">0</span>:<span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>     subset <span class="o">&lt;-</span> as.logical<span class="p">((</span>E <span class="o">==</span> i<span class="p">)</span> <span class="o">*</span> <span class="p">(</span>M <span class="o">==</span> j<span class="p">))</span>
+<span class="o">+</span>     points<span class="p">(</span>rep<span class="p">(</span>k<span class="p">,</span> length<span class="p">(</span>r<span class="p">[</span>subset<span class="p">])),</span> r<span class="p">[</span>subset<span class="p">],</span> pch<span class="o">=</span>symbols<span class="p">[</span>j<span class="o">+</span><span class="m">1</span><span class="p">],</span> bg<span class="o">=</span>colors<span class="p">[</span>i<span class="p">],</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">+</span>     k <span class="o">=</span> k<span class="o">+</span><span class="m">1</span>
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<img alt="_images/e26e851b05.png" src="_images/e26e851b05.png" />
+<p>We now fit some models with  two-way interactions. To test for interactions, we can use either <em>anova</em> or <em>f.test.lm</em> from
+<cite>multiple_</cite>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> interactionX.lm <span class="o">&lt;-</span> lm<span class="p">(</span>S ~ E <span class="o">*</span> X <span class="o">+</span> M<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>interactionX.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> S ~ E <span class="o">*</span> X <span class="o">+</span> M<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-2013.04</span>  <span class="m">-634.68</span>   <span class="m">-16.71</span>   <span class="m">615.66</span>  <span class="m">2014.14</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">7256.28</span>     <span class="m">549.49</span>  <span class="m">13.205</span> <span class="m">5.65</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2           <span class="m">4172.50</span>     <span class="m">674.97</span>   <span class="m">6.182</span> <span class="m">2.90</span>e<span class="o">-</span><span class="m">07</span> <span class="o">***</span>
+E3           <span class="m">3946.36</span>     <span class="m">686.69</span>   <span class="m">5.747</span> <span class="m">1.16</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+X             <span class="m">632.29</span>      <span class="m">53.19</span>  <span class="m">11.888</span> <span class="m">1.53</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+M1           <span class="m">7102.45</span>     <span class="m">333.44</span>  <span class="m">21.300</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2:X         <span class="m">-125.51</span>      <span class="m">69.86</span>  <span class="m">-1.797</span>   <span class="m">0.0801</span> <span class="m">.</span>  
+E3:X         <span class="m">-141.27</span>      <span class="m">89.28</span>  <span class="m">-1.582</span>   <span class="m">0.1216</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1005</span> on <span class="m">39</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9606</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9546</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">158.6</span> on <span class="m">6</span> and <span class="m">39</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+<span class="o">&gt;</span> outlier.test<span class="p">(</span>interactionX.lm<span class="p">)</span>
+
+max<span class="o">|</span>rstudent<span class="o">|</span> <span class="o">=</span> <span class="m">2.389531</span><span class="p">,</span> degrees of freedom <span class="o">=</span> <span class="m">38</span><span class="p">,</span>
+unadjusted p <span class="o">=</span> <span class="m">0.02193652</span><span class="p">,</span> Bonferroni p <span class="o">&gt;</span> <span class="m">1</span>
+
+Observation: <span class="m">8</span> 
+
+
+<span class="c1"># is there an interaction between education and experience?</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>salary.lm<span class="p">,</span> interactionX.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: S ~ E <span class="o">+</span> M <span class="o">+</span> X
+Model <span class="m">2</span>: S ~ E <span class="o">*</span> X <span class="o">+</span> M
+  Res.Df      RSS Df Sum of Sq      <span class="k-Variable">F</span> Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="m">1</span>     <span class="m">41</span> <span class="m">43280719</span>                           
+<span class="m">2</span>     <span class="m">39</span> <span class="m">39410680</span>  <span class="m">2</span>   <span class="m">3870040</span> <span class="m">1.9149</span> <span class="m">0.1610</span>
+
+
+<span class="c1"># is there an interaction between education and management?</span>
+<span class="o">&gt;</span> interactionM.lm <span class="o">&lt;-</span> lm<span class="p">(</span>S ~ X <span class="o">+</span> E <span class="o">*</span> M<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>interactionM.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> S ~ X <span class="o">+</span> E <span class="o">*</span> M<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-928.13</span>  <span class="m">-46.21</span>   <span class="m">24.33</span>   <span class="m">65.88</span>  <span class="m">204.89</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">9472.685</span>     <span class="m">80.344</span>  <span class="m">117.90</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+X            <span class="m">496.987</span>      <span class="m">5.566</span>   <span class="m">89.28</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2          <span class="m">1381.671</span>     <span class="m">77.319</span>   <span class="m">17.87</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E3          <span class="m">1730.748</span>    <span class="m">105.334</span>   <span class="m">16.43</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+M1          <span class="m">3981.377</span>    <span class="m">101.175</span>   <span class="m">39.35</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2:M1       <span class="m">4902.523</span>    <span class="m">131.359</span>   <span class="m">37.32</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E3:M1       <span class="m">3066.035</span>    <span class="m">149.330</span>   <span class="m">20.53</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">173.8</span> on <span class="m">39</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9988</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9986</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:  <span class="m">5517</span> on <span class="m">6</span> and <span class="m">39</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+<span class="o">&gt;</span> anova<span class="p">(</span>salary.lm<span class="p">,</span> interactionM.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: S ~ E <span class="o">+</span> M <span class="o">+</span> X
+Model <span class="m">2</span>: S ~ X <span class="o">+</span> E <span class="o">*</span> M
+  Res.Df      RSS Df Sum of Sq      <span class="k-Variable">F</span>    Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>    
+<span class="m">1</span>     <span class="m">41</span> <span class="m">43280719</span>                                  
+<span class="m">2</span>     <span class="m">39</span>  <span class="m">1178168</span>  <span class="m">2</span>  <span class="m">42102552</span> <span class="m">696.84</span> <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+</pre></div>
+</div>
+<p>The design matrix looks like the original design matrix
+with new columns formed by taking the product of the
+original columns.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> model.matrix<span class="p">(</span>interactionM.lm<span class="p">)[</span><span class="m">1</span>:<span class="m">20</span><span class="p">,]</span>
+   <span class="p">(</span>Intercept<span class="p">)</span> X E2 E3 M1 E2:M1 E3:M1
+<span class="m">1</span>            <span class="m">1</span> <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">1</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">2</span>            <span class="m">1</span> <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">3</span>            <span class="m">1</span> <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">1</span>     <span class="m">0</span>     <span class="m">1</span>
+<span class="m">4</span>            <span class="m">1</span> <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">5</span>            <span class="m">1</span> <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">6</span>            <span class="m">1</span> <span class="m">2</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>     <span class="m">1</span>     <span class="m">0</span>
+<span class="m">7</span>            <span class="m">1</span> <span class="m">2</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">8</span>            <span class="m">1</span> <span class="m">2</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">9</span>            <span class="m">1</span> <span class="m">2</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">10</span>           <span class="m">1</span> <span class="m">3</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">11</span>           <span class="m">1</span> <span class="m">3</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">1</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">12</span>           <span class="m">1</span> <span class="m">3</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">1</span>     <span class="m">1</span>     <span class="m">0</span>
+<span class="m">13</span>           <span class="m">1</span> <span class="m">3</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">1</span>     <span class="m">0</span>     <span class="m">1</span>
+<span class="m">14</span>           <span class="m">1</span> <span class="m">4</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">15</span>           <span class="m">1</span> <span class="m">4</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">1</span>     <span class="m">0</span>     <span class="m">1</span>
+<span class="m">16</span>           <span class="m">1</span> <span class="m">4</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">17</span>           <span class="m">1</span> <span class="m">4</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">18</span>           <span class="m">1</span> <span class="m">5</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">19</span>           <span class="m">1</span> <span class="m">5</span>  <span class="m">0</span>  <span class="m">1</span>  <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span>
+<span class="m">20</span>           <span class="m">1</span> <span class="m">5</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">1</span>     <span class="m">0</span>     <span class="m">0</span>
+</pre></div>
+</div>
+<p>We will plot the residuals as functions of experience
+with each <em>experience</em> and <em>management</em> having a
+different symbol/color.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> r <span class="o">=</span> rstandard<span class="p">(</span>interactionM.lm<span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">,</span> r<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">3</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">0</span>:<span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>     subset <span class="o">&lt;-</span> as.logical<span class="p">((</span>E <span class="o">==</span> i<span class="p">)</span> <span class="o">*</span> <span class="p">(</span>M <span class="o">==</span> j<span class="p">))</span>
+<span class="o">+</span>     points<span class="p">(</span>X<span class="p">[</span>subset<span class="p">],</span> r<span class="p">[</span>subset<span class="p">],</span> pch<span class="o">=</span>symbols<span class="p">[</span>j<span class="o">+</span><span class="m">1</span><span class="p">],</span> bg<span class="o">=</span>colors<span class="p">[</span>i<span class="p">],</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<img alt="_images/3df5a52cd9.png" src="_images/3df5a52cd9.png" />
+<p>One observation seems to be an outlier.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> print<span class="p">(</span>outlier.test<span class="p">(</span>interactionM.lm<span class="p">))</span>
+
+max<span class="o">|</span>rstudent<span class="o">|</span> <span class="o">=</span> <span class="m">14.95083</span><span class="p">,</span> degrees of freedom <span class="o">=</span> <span class="m">38</span><span class="p">,</span>
+unadjusted p <span class="o">=</span> <span class="m">0</span><span class="p">,</span> Bonferroni p <span class="o">=</span> <span class="m">0</span>
+
+Observation: <span class="m">33</span> 
+
+<span class="o">&gt;</span> subs33 <span class="o">=</span> c<span class="p">(</span><span class="m">1</span>:length<span class="p">(</span>S<span class="p">))[</span><span class="m">-33</span><span class="p">]</span>
+
+<span class="o">&gt;</span> salary.lm33 <span class="o">=</span> lm<span class="p">(</span>S ~ E <span class="o">+</span> X <span class="o">+</span> M<span class="p">,</span> subset<span class="o">=</span>subs33<span class="p">)</span>
+<span class="o">&gt;</span> interactionX.lm33 <span class="o">=</span> lm<span class="p">(</span>S ~ E <span class="o">*</span> X <span class="o">+</span> M<span class="p">,</span> subset<span class="o">=</span>subs33<span class="p">)</span>
+
+<span class="o">&gt;</span> summary<span class="p">(</span>salary.lm33<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> S ~ E <span class="o">+</span> X <span class="o">+</span> M<span class="p">,</span> subset <span class="o">=</span> subs33<span class="p">)</span>
+
+Residuals:
+      Min        <span class="m">1</span>Q    Median        <span class="m">3</span>Q       Max 
+<span class="m">-1874.021</span>  <span class="m">-658.208</span>     <span class="m">3.661</span>   <span class="m">850.037</span>  <span class="m">1739.163</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">8044.75</span>     <span class="m">392.78</span>  <span class="m">20.482</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2           <span class="m">3129.53</span>     <span class="m">370.47</span>   <span class="m">8.447</span> <span class="m">1.98</span>e<span class="o">-</span><span class="m">10</span> <span class="o">***</span>
+E3           <span class="m">2999.45</span>     <span class="m">416.71</span>   <span class="m">7.198</span> <span class="m">9.96</span>e<span class="o">-</span><span class="m">09</span> <span class="o">***</span>
+X             <span class="m">545.79</span>      <span class="m">30.91</span>  <span class="m">17.656</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+M1           <span class="m">6866.99</span>     <span class="m">323.99</span>  <span class="m">21.195</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1039</span> on <span class="m">40</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9549</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9504</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">211.7</span> on <span class="m">4</span> and <span class="m">40</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+<span class="o">&gt;</span> summary<span class="p">(</span>interactionX.lm33<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> S ~ E <span class="o">*</span> X <span class="o">+</span> M<span class="p">,</span> subset <span class="o">=</span> subs33<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-2004.24</span>  <span class="m">-633.74</span>   <span class="m">-27.34</span>   <span class="m">646.33</span>  <span class="m">2005.53</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">7266.09</span>     <span class="m">558.87</span>  <span class="m">13.001</span> <span class="m">1.45</span>e<span class="o">-</span><span class="m">15</span> <span class="o">***</span>
+E2           <span class="m">4162.08</span>     <span class="m">685.73</span>   <span class="m">6.070</span> <span class="m">4.57</span>e<span class="o">-</span><span class="m">07</span> <span class="o">***</span>
+E3           <span class="m">3940.44</span>     <span class="m">696.07</span>   <span class="m">5.661</span> <span class="m">1.66</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+X             <span class="m">631.69</span>      <span class="m">53.95</span>  <span class="m">11.709</span> <span class="m">3.57</span>e<span class="o">-</span><span class="m">14</span> <span class="o">***</span>
+M1           <span class="m">7088.64</span>     <span class="m">345.59</span>  <span class="m">20.512</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2:X         <span class="m">-125.50</span>      <span class="m">70.74</span>  <span class="m">-1.774</span>    <span class="m">0.084</span> <span class="m">.</span>  
+E3:X         <span class="m">-139.84</span>      <span class="m">90.73</span>  <span class="m">-1.541</span>    <span class="m">0.132</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1018</span> on <span class="m">38</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9589</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9524</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">147.7</span> on <span class="m">6</span> and <span class="m">38</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+<span class="o">&gt;</span> anova<span class="p">(</span>salary.lm33<span class="p">,</span>interactionX.lm33<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: S ~ E <span class="o">+</span> X <span class="o">+</span> M
+Model <span class="m">2</span>: S ~ E <span class="o">*</span> X <span class="o">+</span> M
+  Res.Df      RSS Df Sum of Sq      <span class="k-Variable">F</span> Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="m">1</span>     <span class="m">40</span> <span class="m">43209096</span>                           
+<span class="m">2</span>     <span class="m">38</span> <span class="m">39374237</span>  <span class="m">2</span>   <span class="m">3834859</span> <span class="m">1.8505</span> <span class="m">0.1710</span>
+
+<span class="o">&gt;</span> interactionM.lm33 <span class="o">=</span> lm<span class="p">(</span>S ~ X <span class="o">+</span> E <span class="o">*</span> M<span class="p">,</span> subset<span class="o">=</span>subs33<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>interactionM.lm33<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> S ~ X <span class="o">+</span> E <span class="o">*</span> M<span class="p">,</span> subset <span class="o">=</span> subs33<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-112.884</span>  <span class="m">-43.636</span>   <span class="m">-5.036</span>   <span class="m">46.622</span>  <span class="m">128.480</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">9458.378</span>     <span class="m">31.041</span>  <span class="m">304.71</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+X            <span class="m">498.418</span>      <span class="m">2.152</span>  <span class="m">231.64</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2          <span class="m">1384.294</span>     <span class="m">29.858</span>   <span class="m">46.36</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E3          <span class="m">1741.336</span>     <span class="m">40.683</span>   <span class="m">42.80</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+M1          <span class="m">3988.817</span>     <span class="m">39.073</span>  <span class="m">102.08</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E2:M1       <span class="m">5049.294</span>     <span class="m">51.668</span>   <span class="m">97.73</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+E3:M1       <span class="m">3051.763</span>     <span class="m">57.674</span>   <span class="m">52.91</span>   <span class="o">&lt;</span><span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">67.12</span> on <span class="m">38</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.9998</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.9998</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">3.543</span>e<span class="o">+</span><span class="m">04</span> on <span class="m">6</span> and <span class="m">38</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+<span class="o">&gt;</span> anova<span class="p">(</span>salary.lm33<span class="p">,</span>interactionM.lm33<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: S ~ E <span class="o">+</span> X <span class="o">+</span> M
+Model <span class="m">2</span>: S ~ X <span class="o">+</span> E <span class="o">*</span> M
+  Res.Df      RSS Df Sum of Sq      <span class="k-Variable">F</span>    Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>    
+<span class="m">1</span>     <span class="m">40</span> <span class="m">43209096</span>                                  
+<span class="m">2</span>     <span class="m">38</span>   <span class="m">171188</span>  <span class="m">2</span>  <span class="m">43037908</span> <span class="m">4776.7</span> <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+</pre></div>
+</div>
+<p>Let&#8217;s replot the residuals</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> r <span class="o">=</span> rstandard<span class="p">(</span>interactionM.lm33<span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>X<span class="p">[</span>subs33<span class="p">],</span> r<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:<span class="m">3</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">for</span> <span class="p">(</span>j in <span class="m">0</span>:<span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>     subset <span class="o">&lt;-</span> as.logical<span class="p">((</span>E <span class="o">==</span> i<span class="p">)</span> <span class="o">*</span> <span class="p">(</span>M <span class="o">==</span> j<span class="p">))</span>
+<span class="o">+</span>     points<span class="p">(</span>X<span class="p">[</span>subset<span class="p">],</span> r<span class="p">[</span>subset<span class="p">],</span> pch<span class="o">=</span>symbols<span class="p">[</span>j<span class="o">+</span><span class="m">1</span><span class="p">],</span> bg<span class="o">=</span>colors<span class="p">[</span>i<span class="p">],</span> cex<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+</pre></div>
+</div>
+<img alt="_images/a2279619a6.png" src="_images/a2279619a6.png" />
+<p>From our first look at the data, the difference between
+Master&#8217;s and PhD in the
+management group is different than in the non-management
+group. This is an interaction between the two qualitative
+variables
+<em>management,M</em> and <em>education,E</em>. We can visualize this
+by first removing the effect of experience, then plotting
+the means within each of the 6 groups using <em>interaction.plot</em>.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> U <span class="o">=</span> S <span class="o">-</span> X <span class="o">*</span> interactionX.lm33<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;X&#39;</span><span class="p">]</span>
+
+<span class="o">&gt;</span> interaction.plot<span class="p">(</span>E<span class="p">,</span> M<span class="p">,</span> U<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span>
+<span class="o">+</span>                  <span class="s">&#39;blue&#39;</span><span class="p">),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> pch<span class="o">=</span>c<span class="p">(</span><span class="m">23</span><span class="p">,</span><span class="m">24</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/1fa6c4d82e.png" src="_images/1fa6c4d82e.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> detach<span class="p">(</span>salary.table<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="minority-employment-data">
+<h2>Minority employment data<a class="headerlink" href="#minority-employment-data" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/minority.table&#39;</span>
+
+<span class="o">&gt;</span> minority.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> minority.table<span class="p">$</span>RACE <span class="o">&lt;-</span> factor<span class="p">(</span>minority.table<span class="p">$</span>RACE<span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>minority.table<span class="p">)</span>
+
+<span class="o">&gt;</span> plot<span class="p">(</span>TEST<span class="p">,</span> JPERF<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">21</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">25</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/bbb5f7c434.png" src="_images/bbb5f7c434.png" />
+<div class="section" id="model-1">
+<h3>Model 1<a class="headerlink" href="#model-1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> minority.lm1 <span class="o">&lt;-</span> lm<span class="p">(</span>JPERF ~ TEST<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>minority.lm1<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> JPERF ~ TEST<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-3.3558</span> <span class="m">-0.8798</span> <span class="m">-0.1897</span>  <span class="m">1.2735</span>  <span class="m">2.3312</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">1.0350</span>     <span class="m">0.8680</span>   <span class="m">1.192</span> <span class="m">0.248617</span>    
+TEST          <span class="m">2.3605</span>     <span class="m">0.5381</span>   <span class="m">4.387</span> <span class="m">0.000356</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1.591</span> on <span class="m">18</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.5167</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.4899</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">19.25</span> on <span class="m">1</span> and <span class="m">18</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.0003555</span> 
+
+
+<span class="o">&gt;</span> plot<span class="p">(</span>TEST<span class="p">,</span> JPERF<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">21</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">25</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm1<span class="p">$</span>coef<span class="p">,</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/bf7f91d3c9.png" src="_images/bf7f91d3c9.png" />
+</div>
+<div class="section" id="model-2">
+<h3>Model 2<a class="headerlink" href="#model-2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> minority.lm2 <span class="o">=</span> lm<span class="p">(</span>JPERF ~ TEST <span class="o">+</span> TEST:RACE<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>minority.lm2<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> JPERF ~ TEST <span class="o">+</span> TEST:RACE<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-2.41100</span> <span class="m">-0.88871</span> <span class="m">-0.03359</span>  <span class="m">0.97720</span>  <span class="m">2.44440</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>   
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">1.1211</span>     <span class="m">0.7804</span>   <span class="m">1.437</span>  <span class="m">0.16900</span>   
+TEST          <span class="m">1.8276</span>     <span class="m">0.5356</span>   <span class="m">3.412</span>  <span class="m">0.00332</span> <span class="o">**</span>
+TEST:RACE1    <span class="m">0.9161</span>     <span class="m">0.3972</span>   <span class="m">2.306</span>  <span class="m">0.03395</span> <span class="o">*</span> 
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1.429</span> on <span class="m">17</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.6319</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.5886</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">14.59</span> on <span class="m">2</span> and <span class="m">17</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.0002045</span> 
+
+
+<span class="o">&gt;</span> plot<span class="p">(</span>TEST<span class="p">,</span> JPERF<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">21</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">25</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm2<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;(Intercept)&#39;</span><span class="p">],</span> minority.lm2<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST&#39;</span><span class="p">],</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm2<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;(Intercept)&#39;</span><span class="p">],</span> minority.lm2<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST&#39;</span><span class="p">]</span> <span class="o">+</span> minority.lm2<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST:RACE1&#39;</span><span class="p">],</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/c15c7a60c6.png" src="_images/c15c7a60c6.png" />
+</div>
+<div class="section" id="model-3">
+<h3>Model 3<a class="headerlink" href="#model-3" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> minority.lm3 <span class="o">=</span> lm<span class="p">(</span>JPERF ~ TEST <span class="o">+</span> RACE<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>minority.lm3<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> JPERF ~ TEST <span class="o">+</span> RACE<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-2.7872</span> <span class="m">-1.0370</span> <span class="m">-0.2095</span>  <span class="m">0.9198</span>  <span class="m">2.3645</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">0.6120</span>     <span class="m">0.8870</span>   <span class="m">0.690</span> <span class="m">0.499578</span>    
+TEST          <span class="m">2.2988</span>     <span class="m">0.5225</span>   <span class="m">4.400</span> <span class="m">0.000391</span> <span class="o">***</span>
+RACE1         <span class="m">1.0276</span>     <span class="m">0.6909</span>   <span class="m">1.487</span> <span class="m">0.155246</span>    
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1.54</span> on <span class="m">17</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.5724</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.5221</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">11.38</span> on <span class="m">2</span> and <span class="m">17</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.0007312</span> 
+
+
+<span class="o">&gt;</span> plot<span class="p">(</span>TEST<span class="p">,</span> JPERF<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">21</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">25</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm3<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;(Intercept)&#39;</span><span class="p">],</span> minority.lm3<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST&#39;</span><span class="p">],</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm3<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;(Intercept)&#39;</span><span class="p">]</span> <span class="o">+</span> minority.lm3<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;RACE1&#39;</span><span class="p">],</span> minority.lm3<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST&#39;</span><span class="p">],</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/41e4f10545.png" src="_images/41e4f10545.png" />
+</div>
+<div class="section" id="model-4">
+<h3>Model 4<a class="headerlink" href="#model-4" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> minority.lm4 <span class="o">=</span> lm<span class="p">(</span>JPERF ~ TEST <span class="o">*</span> RACE<span class="p">)</span>
+<span class="o">&gt;</span> summary<span class="p">(</span>minority.lm4<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> JPERF ~ TEST <span class="o">*</span> RACE<span class="p">)</span>
+
+Residuals:
+    Min      <span class="m">1</span>Q  Median      <span class="m">3</span>Q     Max 
+<span class="m">-2.0734</span> <span class="m">-1.0594</span> <span class="m">-0.2548</span>  <span class="m">1.2830</span>  <span class="m">2.1980</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>  
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">2.0103</span>     <span class="m">1.0501</span>   <span class="m">1.914</span>   <span class="m">0.0736</span> <span class="m">.</span>
+TEST          <span class="m">1.3134</span>     <span class="m">0.6704</span>   <span class="m">1.959</span>   <span class="m">0.0677</span> <span class="m">.</span>
+RACE1        <span class="m">-1.9132</span>     <span class="m">1.5403</span>  <span class="m">-1.242</span>   <span class="m">0.2321</span>  
+TEST:RACE1    <span class="m">1.9975</span>     <span class="m">0.9544</span>   <span class="m">2.093</span>   <span class="m">0.0527</span> <span class="m">.</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">1.407</span> on <span class="m">16</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.6643</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.6013</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">10.55</span> on <span class="m">3</span> and <span class="m">16</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.0004511</span> 
+
+
+<span class="o">&gt;</span> plot<span class="p">(</span>TEST<span class="p">,</span> JPERF<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">0</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">21</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> points<span class="p">(</span>TEST<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> JPERF<span class="p">[(</span>RACE <span class="o">==</span> <span class="m">1</span><span class="p">)],</span> pch<span class="o">=</span><span class="m">25</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm4<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;(Intercept)&#39;</span><span class="p">],</span> minority.lm4<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST&#39;</span><span class="p">],</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;purple&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>minority.lm4<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;(Intercept)&#39;</span><span class="p">]</span> <span class="o">+</span> minority.lm4<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;RACE1&#39;</span><span class="p">],</span>
+<span class="o">+</span>        minority.lm4<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST&#39;</span><span class="p">]</span> <span class="o">+</span> minority.lm4<span class="p">$</span>coef<span class="p">[</span><span class="s">&#39;TEST:RACE1&#39;</span><span class="p">],</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/9b58ee4ac4.png" src="_images/9b58ee4ac4.png" />
+</div>
+<div class="section" id="comparing-models">
+<h3>Comparing models<a class="headerlink" href="#comparing-models" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># is there any effect of RACE on slope or intercept</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>minority.lm1<span class="p">,</span> minority.lm4<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: JPERF ~ TEST
+Model <span class="m">2</span>: JPERF ~ TEST <span class="o">*</span> RACE
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span>  Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>  
+<span class="m">1</span>     <span class="m">18</span> <span class="m">45.568</span>                              
+<span class="m">2</span>     <span class="m">16</span> <span class="m">31.655</span>  <span class="m">2</span>    <span class="m">13.913</span> <span class="m">3.5161</span> <span class="m">0.05424</span> <span class="m">.</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="c1"># is there any effect of RACE on intercept</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>minority.lm1<span class="p">,</span> minority.lm3<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: JPERF ~ TEST
+Model <span class="m">2</span>: JPERF ~ TEST <span class="o">+</span> RACE
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span> Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="m">1</span>     <span class="m">18</span> <span class="m">45.568</span>                           
+<span class="m">2</span>     <span class="m">17</span> <span class="m">40.322</span>  <span class="m">1</span>     <span class="m">5.247</span> <span class="m">2.2121</span> <span class="m">0.1552</span>
+
+<span class="c1"># is there any effect of RACE on slope</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>minority.lm1<span class="p">,</span> minority.lm2<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: JPERF ~ TEST
+Model <span class="m">2</span>: JPERF ~ TEST <span class="o">+</span> TEST:RACE
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span>  Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>  
+<span class="m">1</span>     <span class="m">18</span> <span class="m">45.568</span>                              
+<span class="m">2</span>     <span class="m">17</span> <span class="m">34.708</span>  <span class="m">1</span>    <span class="m">10.861</span> <span class="m">5.3196</span> <span class="m">0.03395</span> <span class="o">*</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="c1"># is it just the slope or both?</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>minority.lm2<span class="p">,</span> minority.lm4<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: JPERF ~ TEST <span class="o">+</span> TEST:RACE
+Model <span class="m">2</span>: JPERF ~ TEST <span class="o">*</span> RACE
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span> Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="m">1</span>     <span class="m">17</span> <span class="m">34.708</span>                           
+<span class="m">2</span>     <span class="m">16</span> <span class="m">31.655</span>  <span class="m">1</span>     <span class="m">3.052</span> <span class="m">1.5427</span> <span class="m">0.2321</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="one-way-anova">
+<h2>One-way ANOVA<a class="headerlink" href="#one-way-anova" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/rehab.csv&#39;</span>
+<span class="o">&gt;</span> rehab.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> rehab.table<span class="p">$</span>Fitness <span class="o">&lt;-</span> factor<span class="p">(</span>rehab.table<span class="p">$</span>Fitness<span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>rehab.table<span class="p">)</span>
+
+	The following object<span class="p">(</span>s<span class="p">)</span> are masked from races.table :
+
+	 Time 
+
+
+<span class="o">&gt;</span> boxplot<span class="p">(</span>Time ~ Fitness<span class="p">,</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="s">&#39;green&#39;</span><span class="p">,</span><span class="s">&#39;blue&#39;</span><span class="p">))</span>
+
+
+<span class="c1"># Fit the one-way ANOVA model</span>
+
+<span class="o">&gt;</span> rehab.lm <span class="o">&lt;-</span> lm<span class="p">(</span>Time ~ Fitness<span class="p">)</span>
+<span class="o">&gt;</span> anova<span class="p">(</span>rehab.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Response: Time
+          Df Sum Sq Mean Sq <span class="k-Variable">F</span> value    Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>    
+Fitness    <span class="m">2</span> <span class="m">672.00</span>  <span class="m">336.00</span>  <span class="m">16.962</span> <span class="m">4.129</span>e<span class="o">-</span><span class="m">05</span> <span class="o">***</span>
+Residuals <span class="m">21</span> <span class="m">416.00</span>   <span class="m">19.81</span>                      
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="o">&gt;</span> model.matrix<span class="p">(</span>rehab.lm<span class="p">)</span>
+   <span class="p">(</span>Intercept<span class="p">)</span> Fitness2 Fitness3
+<span class="m">1</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">2</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">3</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">4</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">5</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">6</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">7</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">8</span>            <span class="m">1</span>        <span class="m">0</span>        <span class="m">0</span>
+<span class="m">9</span>            <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">10</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">11</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">12</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">13</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">14</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">15</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">16</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">17</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">18</span>           <span class="m">1</span>        <span class="m">1</span>        <span class="m">0</span>
+<span class="m">19</span>           <span class="m">1</span>        <span class="m">0</span>        <span class="m">1</span>
+<span class="m">20</span>           <span class="m">1</span>        <span class="m">0</span>        <span class="m">1</span>
+<span class="m">21</span>           <span class="m">1</span>        <span class="m">0</span>        <span class="m">1</span>
+<span class="m">22</span>           <span class="m">1</span>        <span class="m">0</span>        <span class="m">1</span>
+<span class="m">23</span>           <span class="m">1</span>        <span class="m">0</span>        <span class="m">1</span>
+<span class="m">24</span>           <span class="m">1</span>        <span class="m">0</span>        <span class="m">1</span>
+attr<span class="p">(,</span><span class="s">&quot;assign&quot;</span><span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">0</span> <span class="m">1</span> <span class="m">1</span>
+attr<span class="p">(,</span><span class="s">&quot;contrasts&quot;</span><span class="p">)</span>
+attr<span class="p">(,</span><span class="s">&quot;contrasts&quot;</span><span class="p">)$</span>Fitness
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="s">&quot;contr.treatment&quot;</span>
+
+
+<span class="c1"># This means that the coefficient Fitness2 is the estimated</span>
+<span class="c1"># difference between the two groups</span>
+
+<span class="o">&gt;</span> summary<span class="p">(</span>rehab.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Time ~ Fitness<span class="p">)</span>
+
+Residuals:
+   Min     <span class="m">1</span>Q Median     <span class="m">3</span>Q    Max 
+  <span class="m">-9.0</span>   <span class="m">-3.0</span>   <span class="m">-0.5</span>    <span class="m">3.0</span>    <span class="m">8.0</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">38.000</span>      <span class="m">1.574</span>  <span class="m">24.149</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+Fitness2      <span class="m">-6.000</span>      <span class="m">2.111</span>  <span class="m">-2.842</span>  <span class="m">0.00976</span> <span class="o">**</span> 
+Fitness3     <span class="m">-14.000</span>      <span class="m">2.404</span>  <span class="m">-5.824</span> <span class="m">8.81</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">4.451</span> on <span class="m">21</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.6176</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.5812</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">16.96</span> on <span class="m">2</span> and <span class="m">21</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">4.129</span>e<span class="o">-</span><span class="m">05</span> 
+</pre></div>
+</div>
+<img alt="_images/efdbdf4335.png" src="_images/efdbdf4335.png" />
+</div>
+<div class="section" id="two-way-anova">
+<h2>Two-way ANOVA<a class="headerlink" href="#two-way-anova" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Kidney example</span>
+
+<span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/kidney.table&#39;</span>
+<span class="o">&gt;</span> kidney.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+<span class="o">&gt;</span> kidney.table<span class="p">$</span>Duration <span class="o">&lt;-</span> factor<span class="p">(</span>kidney.table<span class="p">$</span>Duration<span class="p">)</span>
+<span class="o">&gt;</span> kidney.table<span class="p">$</span>Weight <span class="o">&lt;-</span> factor<span class="p">(</span>kidney.table<span class="p">$</span>Weight<span class="p">)</span>
+<span class="o">&gt;</span> kidney.table<span class="p">$</span>logDays <span class="o">&lt;-</span> log<span class="p">(</span>kidney.table<span class="p">$</span>Days <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="c1"># Use log days to &quot;stabilize&quot; variance</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>kidney.table<span class="p">)</span>
+
+<span class="c1"># Plot data: is there visual evidence of interactions?</span>
+
+<span class="o">&gt;</span> interaction.plot<span class="p">(</span>Weight<span class="p">,</span> Duration<span class="p">,</span> logDays<span class="p">,</span> type<span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span>
+<span class="o">+</span>                 <span class="s">&#39;blue&#39;</span><span class="p">),</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> pch<span class="o">=</span>c<span class="p">(</span><span class="m">23</span><span class="p">,</span><span class="m">24</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/f9b23d13a8.png" src="_images/f9b23d13a8.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># Fit model</span>
+
+<span class="o">&gt;</span> kidney.lm <span class="o">&lt;-</span> lm<span class="p">(</span>logDays ~ Duration <span class="o">*</span> Weight<span class="p">)</span>
+
+<span class="c1"># Look at ANOVA table</span>
+
+<span class="o">&gt;</span> anova<span class="p">(</span>kidney.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Response: logDays
+                Df  Sum Sq Mean Sq <span class="k-Variable">F</span> value    Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>    
+Duration         <span class="m">1</span>  <span class="m">2.3397</span>  <span class="m">2.3397</span>  <span class="m">4.3583</span>   <span class="m">0.04156</span> <span class="o">*</span>  
+Weight           <span class="m">2</span> <span class="m">16.9713</span>  <span class="m">8.4856</span> <span class="m">15.8067</span> <span class="m">3.945</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+Duration:Weight  <span class="m">2</span>  <span class="m">0.6357</span>  <span class="m">0.3178</span>  <span class="m">0.5920</span>   <span class="m">0.55675</span>    
+Residuals       <span class="m">54</span> <span class="m">28.9892</span>  <span class="m">0.5368</span>                      
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+<span class="c1"># Look at interactions</span>
+
+<span class="o">&gt;</span> anova<span class="p">(</span>lm<span class="p">(</span>logDays ~ Duration <span class="o">+</span> Weight<span class="p">),</span> kidney.lm<span class="p">)</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: logDays ~ Duration <span class="o">+</span> Weight
+Model <span class="m">2</span>: logDays ~ Duration <span class="o">*</span> Weight
+  Res.Df     RSS Df Sum of Sq     <span class="k-Variable">F</span> Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>
+<span class="m">1</span>     <span class="m">56</span> <span class="m">29.6249</span>                          
+<span class="m">2</span>     <span class="m">54</span> <span class="m">28.9892</span>  <span class="m">2</span>    <span class="m">0.6357</span> <span class="m">0.592</span> <span class="m">0.5567</span>
+
+<span class="c1"># Look for main effect of Weight: note it is different from</span>
+<span class="c1"># anova(.) output! Should use anova output in general,</span>
+<span class="c1"># unless you really know there are no interactions.</span>
+
+<span class="o">&gt;</span> anova<span class="p">(</span>lm<span class="p">(</span>logDays ~ Duration<span class="p">),</span> lm<span class="p">(</span>logDays ~ Duration <span class="o">+</span> Weight<span class="p">))</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: logDays ~ Duration
+Model <span class="m">2</span>: logDays ~ Duration <span class="o">+</span> Weight
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span>    Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>    
+<span class="m">1</span>     <span class="m">58</span> <span class="m">46.596</span>                                  
+<span class="m">2</span>     <span class="m">56</span> <span class="m">29.625</span>  <span class="m">2</span>    <span class="m">16.971</span> <span class="m">16.041</span> <span class="m">3.109</span>e<span class="o">-</span><span class="m">06</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+<span class="o">&gt;</span> anova<span class="p">(</span>lm<span class="p">(</span>logDays ~ Weight<span class="p">),</span> lm<span class="p">(</span>logDays ~ Duration <span class="o">+</span> Weight<span class="p">))</span>
+Analysis of Variance Table
+
+Model <span class="m">1</span>: logDays ~ Weight
+Model <span class="m">2</span>: logDays ~ Duration <span class="o">+</span> Weight
+  Res.Df    RSS Df Sum of Sq      <span class="k-Variable">F</span>  Pr<span class="p">(</span><span class="o">&gt;</span><span class="k-Variable">F</span><span class="p">)</span>  
+<span class="m">1</span>     <span class="m">57</span> <span class="m">31.965</span>                              
+<span class="m">2</span>     <span class="m">56</span> <span class="m">29.625</span>  <span class="m">1</span>     <span class="m">2.340</span> <span class="m">4.4227</span> <span class="m">0.03997</span> <span class="o">*</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="transformations.html" title="Transformations & Weighted Least Squares"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="diagnostics.html" title="Diagnostics and influence"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

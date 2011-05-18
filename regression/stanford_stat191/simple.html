@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Simple linear regression &mdash; stats191 v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="stats191 v1.0 documentation" href="index.html" />
+    <link rel="next" title="Diagnostics for simple linear regression model" href="simple_diagnostics.html" />
+    <link rel="prev" title="Some help for R" href="helpR.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="simple_diagnostics.html" title="Diagnostics for simple linear regression model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="helpR.html" title="Some help for R"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Simple linear regression</a><ul>
+<li><a class="reference external" href="#slides">Slides</a></li>
+<li><a class="reference external" href="#heights-example">Heights example</a></li>
+<li><a class="reference external" href="#loss-functions">Loss functions</a></li>
+<li><a class="reference external" href="#density-of-a-t-random-variable">Density of a <em>T</em> random variable</a></li>
+<li><a class="reference external" href="#simulated-confidence-interval">Simulated confidence interval</a></li>
+<li><a class="reference external" href="#confidence-and-prediction-intervals-from-linear-models">Confidence and prediction intervals from linear models</a></li>
+<li><a class="reference external" href="#indicator-variables">Indicator variables</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="helpR.html"
+                                  title="previous chapter">Some help for R</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="simple_diagnostics.html"
+                                  title="next chapter">Diagnostics for simple linear regression model</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/simple.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simple-linear-regression">
+<span id="simple"></span><h1>Simple linear regression<a class="headerlink" href="#simple-linear-regression" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="slides">
+<h2>Slides<a class="headerlink" href="#slides" title="Permalink to this headline">¶</a></h2>
+<p>Download the slides <a class="reference external" href="notes/simple.pdf">here</a>. This corresponds roughly
+to Chapter 2 of <a class="reference external" href="http://www.ilr.cornell.edu/%7Ehadi/RABE/#Download&quot;">Regression Analysis by Example</a>.</p>
+</div>
+<div class="section" id="heights-example">
+<h2>Heights example<a class="headerlink" href="#heights-example" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we&#8217;ll look at the output of <em>lm</em> for the heights
+data and verify that the equations we had for the
+least squares solutions agree with the output.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="c1"># load in the data</span>
+
+<span class="o">&gt;</span> url <span class="o">=</span> <span class="s">&#39;http://stats191.stanford.edu/data/heights.table&#39;</span>
+<span class="o">&gt;</span> heights.table <span class="o">&lt;-</span> read.table<span class="p">(</span>url<span class="p">,</span> header<span class="o">=</span><span class="k-Variable">T</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> attach<span class="p">(</span>heights.table<span class="p">)</span>
+
+<span class="c1"># fit the linear model</span>
+
+<span class="o">&gt;</span> wife.lm <span class="o">&lt;-</span> lm<span class="p">(</span>WIFE ~ HUSBAND<span class="p">)</span>
+
+<span class="c1"># Compute coefficients by hand to make sure they agree</span>
+
+<span class="o">&gt;</span> beta.1.hat <span class="o">&lt;-</span> cov<span class="p">(</span>HUSBAND<span class="p">,</span> WIFE<span class="p">)</span> <span class="o">/</span> var<span class="p">(</span>HUSBAND<span class="p">)</span>
+<span class="o">&gt;</span> beta.0.hat <span class="o">&lt;-</span> mean<span class="p">(</span>WIFE<span class="p">)</span> <span class="o">-</span> beta.1.hat <span class="o">*</span> mean<span class="p">(</span>HUSBAND<span class="p">)</span>
+<span class="o">&gt;</span> c<span class="p">(</span>beta.1.hat<span class="p">,</span> beta.0.hat<span class="p">)</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span>  <span class="m">0.6959256</span> <span class="m">42.5487122</span>
+<span class="o">&gt;</span> coef<span class="p">(</span>wife.lm<span class="p">)</span>
+<span class="p">(</span>Intercept<span class="p">)</span>     HUSBAND 
+ <span class="m">42.5487122</span>   <span class="m">0.6959256</span> 
+
+<span class="c1"># Estimate sigma squared -- df.resid are degrees of freedom</span>
+
+<span class="o">&gt;</span> sigma.hat <span class="o">&lt;-</span> sqrt<span class="p">(</span>sum<span class="p">(</span>resid<span class="p">(</span>wife.lm<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span> <span class="o">/</span> wife.lm<span class="p">$</span>df.resid<span class="p">)</span>
+<span class="o">&gt;</span> sigma.hat
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">5.951824</span>
+
+
+<span class="o">&gt;</span> summary<span class="p">(</span>wife.lm<span class="p">)</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> WIFE ~ HUSBAND<span class="p">)</span>
+
+Residuals:
+     Min       <span class="m">1</span>Q   Median       <span class="m">3</span>Q      Max 
+<span class="m">-19.4235</span>  <span class="m">-3.9438</span>   <span class="m">0.8399</span>   <span class="m">4.0123</span>  <span class="m">11.1439</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>    
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">42.54871</span>   <span class="m">10.77592</span>   <span class="m">3.949</span> <span class="m">0.000153</span> <span class="o">***</span>
+HUSBAND      <span class="m">0.69593</span>    <span class="m">0.06176</span>  <span class="m">11.268</span>  <span class="o">&lt;</span> <span class="m">2</span>e<span class="o">-</span><span class="m">16</span> <span class="o">***</span>
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">5.952</span> on <span class="m">93</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.5772</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">0.5727</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic:   <span class="m">127</span> on <span class="m">1</span> and <span class="m">93</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="o">&lt;</span> <span class="m">2.2</span>e<span class="o">-</span><span class="m">16</span> 
+
+
+<span class="c1"># can you find where beta.0.hat, beta.1.hat and</span>
+<span class="c1"># sigma.hat appear?</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loss-functions">
+<h2>Loss functions<a class="headerlink" href="#loss-functions" title="Permalink to this headline">¶</a></h2>
+<p>We use least squares to find the slope, but we could use
+other loss functions. This example plots the loss
+as a function of two parameters. Note that the
+least squares one is smoother (hence we would expect it to be easier
+to minimize) then the absolute deviation.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> X <span class="o">=</span> rnorm<span class="p">(</span><span class="m">50</span><span class="p">)</span>
+<span class="o">&gt;</span> Y <span class="o">=</span> <span class="m">2</span> <span class="o">+</span> <span class="m">1.5</span> <span class="o">*</span> rnorm<span class="p">(</span><span class="m">50</span><span class="p">)</span>
+
+<span class="c1"># Squared error loss: &#39;least squares&#39;</span>
+
+<span class="o">&gt;</span> squared.error <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>b0<span class="p">,</span> b1<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span> <span class="kr">return</span><span class="p">(</span>sqrt<span class="p">(</span>sum<span class="p">((</span>Y <span class="o">-</span> b0 <span class="o">-</span> b1<span class="o">*</span>X<span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="c1"># Absolute value loss: &#39;absolute deviation&#39;</span>
+
+<span class="o">&gt;</span> absolute.loss <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>b0<span class="p">,</span> b1<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span> <span class="kr">return</span><span class="p">(</span>sum<span class="p">(</span>abs<span class="p">(</span>Y <span class="o">-</span> b0 <span class="o">-</span> b1<span class="o">*</span>X<span class="p">)))</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="c1"># Plot the loss over a grid of values</span>
+
+<span class="o">&gt;</span> plot.loss <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>loss<span class="p">,</span> b0<span class="p">,</span> b1<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>    l <span class="o">=</span> matrix<span class="p">(</span><span class="m">0</span><span class="p">,</span> length<span class="p">(</span>b0<span class="p">),</span> length<span class="p">(</span>b1<span class="p">))</span>
+<span class="o">+</span>    <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:length<span class="p">(</span>b0<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>       <span class="kr">for</span> <span class="p">(</span>j in <span class="m">1</span>:length<span class="p">(</span>b1<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>           l<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span> <span class="o">=</span> loss<span class="p">(</span>b0<span class="p">[</span>i<span class="p">],</span> b1<span class="p">[</span>j<span class="p">])</span>
+<span class="o">+</span>       <span class="p">}</span>
+<span class="o">+</span>    <span class="p">}</span>
+<span class="o">+</span>    stop
+<span class="o">+</span>    image<span class="p">(</span>b0<span class="p">,</span> b1<span class="p">,</span> l<span class="p">,</span> col<span class="o">=</span>rainbow<span class="p">(</span><span class="m">1000</span><span class="p">))</span>
+<span class="o">+</span>    <span class="kr">return</span><span class="p">(</span>l<span class="p">)</span>
+<span class="o">+</span> <span class="p">}</span>
+
+<span class="o">&gt;</span> ll <span class="o">=</span> plot.loss<span class="p">(</span>squared.error<span class="p">,</span> seq<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">4</span><span class="p">,</span>length<span class="o">=</span><span class="m">100</span><span class="p">),</span> seq<span class="p">(</span><span class="m">-2</span><span class="p">,</span><span class="m">2</span><span class="p">,</span>length<span class="o">=</span><span class="m">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/907d18cd67.png" src="_images/907d18cd67.png" />
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> ll <span class="o">=</span> plot.loss<span class="p">(</span>absolute.loss<span class="p">,</span> seq<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">4</span><span class="p">,</span>length<span class="o">=</span><span class="m">100</span><span class="p">),</span> seq<span class="p">(</span><span class="m">-2</span><span class="p">,</span><span class="m">2</span><span class="p">,</span>length<span class="o">=</span><span class="m">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/04bbcdd8f9.png" src="_images/04bbcdd8f9.png" />
+</div>
+<div class="section" id="density-of-a-t-random-variable">
+<h2>Density of a <em>T</em> random variable<a class="headerlink" href="#density-of-a-t-random-variable" title="Permalink to this headline">¶</a></h2>
+<p>We will be seeing a lot of Student&#8217;s <em>T</em> random variables. This example
+plots the density of a T and compares it to a standard Normal.
+You can see that the <em>T</em> has heavier tails than the Normal.
+In the code, you can also see how to use the density functions of R in this
+example as well.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> xseq <span class="o">&lt;-</span> seq<span class="p">(</span><span class="m">-3</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">0.01</span><span class="p">)</span>
+<span class="o">&gt;</span> plot<span class="p">(</span>xseq<span class="p">,</span> dt<span class="p">(</span>xseq<span class="p">,</span> <span class="m">10</span><span class="p">),</span> xlab<span class="o">=</span><span class="s">&#39;s&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Density -- f(s)&#39;</span><span class="p">,</span> type<span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> lines<span class="p">(</span>xseq<span class="p">,</span> dnorm<span class="p">(</span>xseq<span class="p">),</span> lty<span class="o">=</span><span class="m">2</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>qt<span class="p">(</span><span class="m">0.975</span><span class="p">,</span><span class="m">10</span><span class="p">),</span> lty<span class="o">=</span><span class="m">1</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>qt<span class="p">(</span><span class="m">0.025</span><span class="p">,</span><span class="m">10</span><span class="p">),</span> lty<span class="o">=</span><span class="m">1</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>qnorm<span class="p">(</span><span class="m">0.975</span><span class="p">),</span> lty<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> abline<span class="p">(</span>v<span class="o">=</span>qnorm<span class="p">(</span><span class="m">0.025</span><span class="p">),</span> lty<span class="o">=</span><span class="m">2</span><span class="p">,</span> col<span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> legend<span class="p">(</span><span class="m">-1</span><span class="p">,</span><span class="m">0.2</span><span class="p">,</span> c<span class="p">(</span><span class="s">&#39;t, 10 df&#39;</span><span class="p">,</span> <span class="s">&#39;Normal&#39;</span><span class="p">),</span> lty<span class="o">=</span>c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">),</span> col<span class="o">=</span>c<span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="s">&#39;orange&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/1cea7193c1.png" src="_images/1cea7193c1.png" />
+</div>
+<div class="section" id="simulated-confidence-interval">
+<h2>Simulated confidence interval<a class="headerlink" href="#simulated-confidence-interval" title="Permalink to this headline">¶</a></h2>
+<p>This example illustrates the principle of confidence intervals.
+I will simulate several draws from the Normal distribution
+with mean 0, and construct the usual confidence interval for the mean of
+each of the samples. Setting <em>alpha=0.15</em> below should yield about
+500*0.15=75 intervals that do not cover 0, and about
+500*0.85=425 intervals that do cover 0.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> nsample <span class="o">=</span> <span class="m">500</span> <span class="c1"># how many samples to generate</span>
+<span class="o">&gt;</span> nobs <span class="o">=</span> <span class="m">10</span>  <span class="c1"># how many observations in each sample</span>
+<span class="o">&gt;</span> alpha <span class="o">=</span> <span class="m">0.15</span>
+
+<span class="o">&gt;</span> CI.data <span class="o">=</span> matrix<span class="p">(</span><span class="m">0</span><span class="p">,</span> nrow<span class="o">=</span>nsample<span class="p">,</span> ncol<span class="o">=</span><span class="m">2</span><span class="p">)</span> <span class="c1"># a matrix to store the data</span>
+
+<span class="o">&gt;</span> cover <span class="o">=</span> numeric<span class="p">(</span>nsample<span class="p">)</span> <span class="c1"># a counter to see how many CIs contain 0</span>
+<span class="o">&gt;</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:nsample<span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>   CI.data<span class="p">[</span>i<span class="p">,]</span> <span class="o">=</span> t.test<span class="p">(</span>rnorm<span class="p">(</span>nobs<span class="p">),</span> conf.level<span class="o">=</span><span class="m">1</span><span class="o">-</span>alpha<span class="p">)$</span>conf.int
+<span class="o">+</span>   cover<span class="p">[</span>i<span class="p">]</span> <span class="o">=</span> <span class="p">(</span>CI.data<span class="p">[</span>i<span class="p">,</span><span class="m">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="m">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>CI.data<span class="p">[</span>i<span class="p">,</span><span class="m">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="m">0</span><span class="p">)</span> <span class="c1"># add 1 if</span>
+<span class="o">+</span>                                         <span class="c1"># CI contains 0</span>
+<span class="o">+</span> <span class="p">}</span>
+<span class="o">&gt;</span> sum<span class="p">(</span>cover<span class="p">)</span><span class="o">/</span>nsample <span class="c1"># coverage percentage, should be approx 1-alpha</span>
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="m">0.846</span>
+</pre></div>
+</div>
+<p>This next bit of code plots some of the
+confidence intervals and colors
+them red if they cover 0, blue otherwise. Since <em>alpha=0.15</em> we should
+expect about 34 of the 40 intervals to cover 0, but the number that
+actually do is
+random (~ Binomial(40,0.85)).</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> simulate <span class="o">=</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="o">+</span> nplot <span class="o">=</span> <span class="m">40</span> <span class="c1"># how many intervals to plot</span>
+<span class="o">+</span> 
+<span class="o">+</span> plot<span class="p">(</span>c<span class="p">(</span><span class="m">-2</span><span class="p">,</span><span class="m">2</span><span class="p">),</span> c<span class="p">(</span><span class="m">1</span><span class="p">,</span> nplot<span class="p">),</span> type<span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">,</span> xlab<span class="o">=</span><span class="s">&#39;Confidence Intervals&#39;</span><span class="p">,</span> ylab<span class="o">=</span><span class="s">&#39;Sample&#39;</span><span class="p">)</span>
+<span class="o">+</span> <span class="kr">for</span> <span class="p">(</span>i in <span class="m">1</span>:min<span class="p">(</span>nsample<span class="p">,</span> nplot<span class="p">))</span> <span class="p">{</span>
+<span class="o">+</span>   <span class="kr">if</span> <span class="p">(</span>cover<span class="p">[</span>i<span class="p">])</span> <span class="p">{</span>
+<span class="o">+</span>     lines<span class="p">(</span>CI.data<span class="p">[</span>i<span class="p">,],</span> rep<span class="p">(</span>i<span class="p">,</span><span class="m">2</span><span class="p">),</span> col<span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span> <span class="c1"># add a red bar for</span>
+<span class="o">+</span>                                         <span class="c1"># each CI that covers</span>
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span>   <span class="kr">else</span> <span class="p">{</span>
+<span class="o">+</span>     lines<span class="p">(</span>CI.data<span class="p">[</span>i<span class="p">,],</span> rep<span class="p">(</span>i<span class="p">,</span><span class="m">2</span><span class="p">),</span> col<span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span> <span class="c1"># add a red bar for</span>
+<span class="o">+</span>                                         <span class="c1"># each CI that covers</span>
+<span class="o">+</span>   <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+<span class="o">+</span> <span class="p">}</span>
+<span class="o">&gt;</span> simulate<span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/3c78b05259.png" src="_images/3c78b05259.png" />
+</div>
+<div class="section" id="confidence-and-prediction-intervals-from-linear-models">
+<h2>Confidence and prediction intervals from linear models<a class="headerlink" href="#confidence-and-prediction-intervals-from-linear-models" title="Permalink to this headline">¶</a></h2>
+<p>R has many builtin convenience functions to compute confidence intervals
+for you, the main one being the function <em>predict</em>.</p>
+<p>We can easily get confidence intervals for the coefficients
+in the regression model using <em>confint</em>. These are
+90% confidence intervals for the intercept, <em>(Intercept)</em>
+and the slope, <em>HUSBAND</em> of the true regression line.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> confint<span class="p">(</span>wife.lm<span class="p">,</span> level<span class="o">=</span><span class="m">0.90</span><span class="p">)</span>
+                   <span class="m">5</span> <span class="o">%</span>      <span class="m">95</span> <span class="o">%</span>
+<span class="p">(</span>Intercept<span class="p">)</span> <span class="m">24.6455625</span> <span class="m">60.451862</span>
+HUSBAND      <span class="m">0.5933172</span>  <span class="m">0.798534</span>
+</pre></div>
+</div>
+<p>We might want a 90% confidence interval for the height of a wife married
+to a husband of height 160.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> predict<span class="p">(</span>wife.lm<span class="p">,</span> list<span class="p">(</span>HUSBAND<span class="o">=</span><span class="m">160</span><span class="p">),</span>
+<span class="o">+</span> interval<span class="o">=</span><span class="s">&#39;confidence&#39;</span><span class="p">,</span> level<span class="o">=</span><span class="m">0.90</span><span class="p">)</span>
+       fit      lwr      upr
+<span class="m">1</span> <span class="m">153.8968</span> <span class="m">152.1214</span> <span class="m">155.6723</span>
+</pre></div>
+</div>
+<p>Or, a prediction interval. Note that the prediction interval is wider
+because it includes the population variability.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> predict<span class="p">(</span>wife.lm<span class="p">,</span> list<span class="p">(</span>HUSBAND<span class="o">=</span><span class="m">160</span><span class="p">),</span>
+<span class="o">+</span> interval<span class="o">=</span><span class="s">&#39;prediction&#39;</span><span class="p">,</span> level<span class="o">=</span><span class="m">0.90</span><span class="p">)</span>
+       fit      lwr      upr
+<span class="m">1</span> <span class="m">153.8968</span> <span class="m">143.8503</span> <span class="m">163.9433</span>
+</pre></div>
+</div>
+<p>Finally, we detach the height data.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> detach<span class="p">(</span>heights.table<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="indicator-variables">
+<h2>Indicator variables<a class="headerlink" href="#indicator-variables" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we show that the usual two-sample <em>t</em>-test
+can be viewed as a regression.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> X <span class="o">=</span> c<span class="p">(</span><span class="m">4</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">8</span><span class="p">,</span><span class="m">3.4</span><span class="p">,</span><span class="m">1</span><span class="p">)</span>
+<span class="o">&gt;</span> Y <span class="o">=</span> c<span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">7</span><span class="p">,</span><span class="m">5</span><span class="p">)</span>
+
+<span class="c1"># Join the vectors together</span>
+
+<span class="o">&gt;</span> Z <span class="o">=</span> c<span class="p">(</span>X<span class="p">,</span> Y<span class="p">)</span>
+<span class="o">&gt;</span> dummy <span class="o">=</span> c<span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">)</span>
+
+<span class="o">&gt;</span> summary<span class="p">(</span>lm<span class="p">(</span>Z ~ dummy<span class="p">))</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Z ~ dummy<span class="p">)</span>
+
+Residuals:
+       Min         <span class="m">1</span>Q     Median         <span class="m">3</span>Q        Max 
+<span class="m">-2.900</span>e<span class="o">+</span><span class="m">00</span> <span class="m">-1.900</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">2.114</span>e<span class="o">-</span><span class="m">16</span>  <span class="m">1.100</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">4.100</span>e<span class="o">+</span><span class="m">00</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>   
+<span class="p">(</span>Intercept<span class="p">)</span>    <span class="m">5.000</span>      <span class="m">1.350</span>   <span class="m">3.702</span>  <span class="m">0.00763</span> <span class="o">**</span>
+dummy         <span class="m">-1.100</span>      <span class="m">1.654</span>  <span class="m">-0.665</span>  <span class="m">0.52731</span>   
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">2.339</span> on <span class="m">7</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.05943</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">-0.07494</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">0.4423</span> on <span class="m">1</span> and <span class="m">7</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.5273</span> 
+
+<span class="o">&gt;</span> confint<span class="p">(</span>lm<span class="p">(</span>Z ~ dummy<span class="p">))</span>
+                <span class="m">2.5</span> <span class="o">%</span>   <span class="m">97.5</span> <span class="o">%</span>
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">1.806611</span> <span class="m">8.193389</span>
+dummy       <span class="m">-5.011087</span> <span class="m">2.811087</span>
+<span class="o">&gt;</span> t.test<span class="p">(</span>X<span class="p">,</span>Y<span class="p">,</span>var.equal<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+	Two Sample t<span class="o">-</span>test
+
+data:  X and Y 
+t <span class="o">=</span> <span class="m">-0.6651</span><span class="p">,</span> df <span class="o">=</span> <span class="m">7</span><span class="p">,</span> p<span class="o">-</span>value <span class="o">=</span> <span class="m">0.5273</span>
+alternative hypothesis: true difference in means is not equal to <span class="m">0</span> 
+<span class="m">95</span> percent confidence interval:
+ <span class="m">-5.011087</span>  <span class="m">2.811087</span> 
+sample estimates:
+mean of x mean of y 
+      <span class="m">3.9</span>       <span class="m">5.0</span> 
+</pre></div>
+</div>
+<p>In R, you can create dummy variables using what are known as factors.</p>
+<div class="highlight-r"><div class="highlight"><pre><span class="o">&gt;</span> dummy <span class="o">=</span> factor<span class="p">(</span>c<span class="p">(</span>rep<span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="m">6</span><span class="p">),</span> rep<span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">,</span><span class="m">3</span><span class="p">)))</span>
+<span class="o">&gt;</span> dummy
+<span class="p">[</span><span class="m">1</span><span class="p">]</span> A A A A A A B B B
+Levels: A B
+<span class="o">&gt;</span> summary<span class="p">(</span>lm<span class="p">(</span>Z ~ dummy<span class="p">))</span>
+
+Call:
+lm<span class="p">(</span>formula <span class="o">=</span> Z ~ dummy<span class="p">)</span>
+
+Residuals:
+       Min         <span class="m">1</span>Q     Median         <span class="m">3</span>Q        Max 
+<span class="m">-2.900</span>e<span class="o">+</span><span class="m">00</span> <span class="m">-1.900</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">2.715</span>e<span class="o">-</span><span class="m">16</span>  <span class="m">1.100</span>e<span class="o">+</span><span class="m">00</span>  <span class="m">4.100</span>e<span class="o">+</span><span class="m">00</span> 
+
+Coefficients:
+            Estimate Std. Error t value Pr<span class="p">(</span><span class="o">&gt;|</span>t<span class="o">|</span><span class="p">)</span>   
+<span class="p">(</span>Intercept<span class="p">)</span>   <span class="m">3.9000</span>     <span class="m">0.9549</span>   <span class="m">4.084</span>  <span class="m">0.00467</span> <span class="o">**</span>
+dummyB        <span class="m">1.1000</span>     <span class="m">1.6540</span>   <span class="m">0.665</span>  <span class="m">0.52731</span>   
+<span class="o">---</span>
+Signif. codes:  <span class="m">0</span> ‘<span class="o">***</span>’ <span class="m">0.001</span> ‘<span class="o">**</span>’ <span class="m">0.01</span> ‘<span class="o">*</span>’ <span class="m">0.05</span> ‘<span class="m">.</span>’ <span class="m">0.1</span> ‘ ’ <span class="m">1</span> 
+
+Residual standard error: <span class="m">2.339</span> on <span class="m">7</span> degrees of freedom
+Multiple R<span class="o">-</span>squared: <span class="m">0.05943</span><span class="p">,</span>	Adjusted R<span class="o">-</span>squared: <span class="m">-0.07494</span> 
+<span class="k-Variable">F</span><span class="o">-</span>statistic: <span class="m">0.4423</span> on <span class="m">1</span> and <span class="m">7</span> DF<span class="p">,</span>  p<span class="o">-</span>value: <span class="m">0.5273</span> 
+
+<span class="o">&gt;</span> confint<span class="p">(</span>lm<span class="p">(</span>Z ~ dummy<span class="p">))</span>
+                <span class="m">2.5</span> <span class="o">%</span>   <span class="m">97.5</span> <span class="o">%</span>
+<span class="p">(</span>Intercept<span class="p">)</span>  <span class="m">1.641933</span> <span class="m">6.158067</span>
+dummyB      <span class="m">-2.811087</span> <span class="m">5.011087</span>
+<span class="o">&gt;</span> t.test<span class="p">(</span>X<span class="p">,</span>Y<span class="p">,</span>var.equal<span class="o">=</span><span class="k-Variable">T</span><span class="p">)</span>
+
+	Two Sample t<span class="o">-</span>test
+
+data:  X and Y 
+t <span class="o">=</span> <span class="m">-0.6651</span><span class="p">,</span> df <span class="o">=</span> <span class="m">7</span><span class="p">,</span> p<span class="o">-</span>value <span class="o">=</span> <span class="m">0.5273</span>
+alternative hypothesis: true difference in means is not equal to <span class="m">0</span> 
+<span class="m">95</span> percent confidence interval:
+ <span class="m">-5.011087</span>  <span class="m">2.811087</span> 
+sample estimates:
+mean of x mean of y 
+      <span class="m">3.9</span>       <span class="m">5.0</span> 
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="simple_diagnostics.html" title="Diagnostics for simple linear regression model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="helpR.html" title="Some help for R"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Jonathan Taylor, based on matplotlib sampledoc of John Hunter, Fernando Perez, Michael Droettboom.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>
