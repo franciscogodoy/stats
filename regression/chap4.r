@@ -64,6 +64,16 @@
 
 	avPlots(deli.lm, pch=23,bg='orange', cex=2);
 
+	par(mfrow=c(1,2));
+	avPlots(deli.lm, 'Cases', pch=23, bg='orange', cex=2);
+	crPlots(deli.lm, 'Cases', pch=23, bg='orange', cex=2);
+	
+	par(mfrow=c(1,2));
+	avPlots(deli.lm, 'Distance', pch=2, col='blue', lwd=2);
+	crPlots(deli.lm, 'Distance', pch=2, col='blue', lwd=2);
+
+
+
 
 	plot(dfbetas(m422)[,'x1'], pch=23, bg='orange', cex=2, ylab="DFBETA (x1)");
 	plot(dfbetas(m422)[,'x3'], pch=23, bg='orange', cex=2, ylab="DFBETA (x3)");
